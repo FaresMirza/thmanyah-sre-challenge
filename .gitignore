@@ -24,8 +24,9 @@ package-lock.json
 vendor/
 go.work
 
-# Go binaries
-auth-service
+# Go binaries (ignore only in bin directories)
+**/bin/
+apps/auth-service/auth-service
 
 # ============================================
 # Python (image-service)
