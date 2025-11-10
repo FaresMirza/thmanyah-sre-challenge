@@ -34,8 +34,6 @@ All workloads are deployed declaratively on **Kubernetes (kind)** and continuous
 - Calico NetworkPolicies strictly control inter-service communication.
 - SOPS + AWS KMS secure all credentials.
 
-📊 See `diagrams/architecture.png` for a visual diagram.
-
 ---
 
 ## ⚙️ 3. Deployment Instructions
