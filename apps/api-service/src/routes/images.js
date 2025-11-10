@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { listImages, uploadImage } = require("../services/imageClient");
+const { listImages, uploadImage } = require("../utils/imageClient");
 
 // Get all images
 router.get("/", async (req, res) => {

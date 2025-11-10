@@ -10,6 +10,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	_ "github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var db *sql.DB
@@ -23,7 +24,6 @@ func main() {
 	}
 	defer db.Close()
 
-	http.HandleFunc("/register", handleRegister)
 	http.HandleFunc("/login", handleLogin)
 	http.HandleFunc("/verify", handleVerify)
 	http.HandleFunc("/healthz", handleHealth)
@@ -39,43 +39,6 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func handleRegister(w http.ResponseWriter, r *http.Request) {
-	type creds struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
-	var c creds
-	json.NewDecoder(r.Body).Decode(&c)
-
-	if c.Username == "" || c.Password == "" {
-		http.Error(w, "Username and password required", http.StatusBadRequest)
-		return
-	}
-
-	// Create users table if not exists
-	_, err := db.Exec(`
-		CREATE TABLE IF NOT EXISTS users (
-			id SERIAL PRIMARY KEY,
-			username VARCHAR(50) UNIQUE NOT NULL,
-			password VARCHAR(50) NOT NULL
-		);
-	`)
-	if err != nil {
-		http.Error(w, "Error creating table", http.StatusInternalServerError)
-		return
-	}
-
-	// Insert user
-	_, err = db.Exec("INSERT INTO users (username, password) VALUES ($1, $2)", c.Username, c.Password)
-	if err != nil {
-		http.Error(w, "User already exists", http.StatusConflict)
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]string{"message": "User created"})
-}
-
 func handleLogin(w http.ResponseWriter, r *http.Request) {
 	type creds struct {
 		Username string `json:"username"`
@@ -84,10 +47,16 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	var c creds
 	json.NewDecoder(r.Body).Decode(&c)
 
-	// Check credentials from database
 	var dbPassword string
 	err := db.QueryRow("SELECT password FROM users WHERE username=$1", c.Username).Scan(&dbPassword)
-	if err != nil || dbPassword != c.Password {
+	if err != nil {
+		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		return
+	}
+
+	// Compare bcrypt hashed password
+	err = bcrypt.CompareHashAndPassword([]byte(dbPassword), []byte(c.Password))
+	if err != nil {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
 	}

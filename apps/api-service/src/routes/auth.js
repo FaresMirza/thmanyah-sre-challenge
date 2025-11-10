@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { verifyToken } = require("../services/authClient");
+const { verifyToken } = require("../utils/authClient");
 
 // Validate token
 router.get("/verify", async (req, res) => {
