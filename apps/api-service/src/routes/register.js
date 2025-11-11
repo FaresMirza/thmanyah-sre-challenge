@@ -5,11 +5,17 @@ const bcrypt = require("bcryptjs");
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
+const log = (level, message) => {
+  console.log(`[${new Date().toISOString()}] [API-SERVICE] ${level}: ${message}`);
+};
+
 router.post("/", async (req, res) => {
   const { username, password } = req.body;
 
-  if (!username || !password)
+  if (!username || !password) {
+    log('WARN', `Registration attempt with missing credentials from ${req.ip}`);
     return res.status(400).json({ error: "Username and password required" });
+  }
 
   try {
     // Ensure table exists
@@ -30,11 +36,14 @@ router.post("/", async (req, res) => {
       [username, hashedPassword]
     );
 
+    log('INFO', `User '${username}' registered successfully from ${req.ip}`);
     res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
     if (err.code === "23505") {
+      log('WARN', `Registration attempt for existing user '${username}' from ${req.ip}`);
       return res.status(409).json({ error: "User already exists" });
     }
+    log('ERROR', `Registration failed for user '${username}': ${err.message}`);
     console.error(err);
     res.status(500).json({ error: "Internal server error" });
   }
