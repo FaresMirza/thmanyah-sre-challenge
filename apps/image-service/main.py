@@ -19,6 +19,17 @@ s3 = boto3.client(
     aws_secret_access_key=MINIO_SECRET_KEY,
 )
 
+# Ensure bucket exists on startup
+try:
+    s3.head_bucket(Bucket=MINIO_BUCKET)
+    print(f"✓ Bucket '{MINIO_BUCKET}' exists")
+except Exception:
+    try:
+        s3.create_bucket(Bucket=MINIO_BUCKET)
+        print(f"✓ Created bucket '{MINIO_BUCKET}'")
+    except Exception as e:
+        print(f"⚠ Warning: Could not create bucket '{MINIO_BUCKET}': {e}")
+
 @app.get("/healthz")
 def health():
     return {"status": "ok"}
