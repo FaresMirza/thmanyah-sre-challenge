@@ -6,7 +6,6 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     nginx.ingress.kubernetes.io/enable-access-log: "true"
-    nginx.ingress.kubernetes.io/allow-cross-namespace-backend: "true"
 spec:
   ingressClassName: nginx
   rules:
@@ -17,20 +16,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: api-service
+                name: api-external
                 port:
                   number: 3000
-          - path: /auth
-            pathType: Prefix
-            backend:
-              service:
-                name: auth-service
-                port:
-                  number: 4000
-          - path: /image
-            pathType: Prefix
-            backend:
-              service:
-                name: image-service
-                port:
-                  number: 5000
