@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ingress-nginx
+  namespace: ingress-ns
+  labels:
+    app: ingress-nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ingress-nginx
+  template:
+    metadata:
+      labels:
+        app: ingress-nginx
+    spec:
+      serviceAccountName: ingress-nginx
+      containers:
+        - name: controller
+          image: registry.k8s.io/ingress-nginx/controller:v1.10.1
+          args:
+            - /nginx-ingress-controller
+            - --ingress-class=nginx
+            - --watch-ingress-without-class=true
+            - --allow-cross-namespace-backend=true     
+            - --publish-service=$(POD_NAMESPACE)/ingress-nginx
+            - --election-id=ingress-controller-leader
+            - --controller-class=k8s.io/ingress-nginx
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          ports:
+            - name: http
+              containerPort: 80
+            - name: https
+              containerPort: 443
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 10254
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 10254

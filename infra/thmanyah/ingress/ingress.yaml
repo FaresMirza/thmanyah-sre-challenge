@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: thmanyah-ingress
+  namespace: ingress-ns
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/enable-access-log: "true"
+    nginx.ingress.kubernetes.io/allow-cross-namespace-backend: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: thmanyah.local
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: api-service
+                port:
+                  number: 3000
+          - path: /auth
+            pathType: Prefix
+            backend:
+              service:
+                name: auth-service
+                port:
+                  number: 4000
+          - path: /image
+            pathType: Prefix
+            backend:
+              service:
+                name: image-service
+                port:
+                  number: 5000
