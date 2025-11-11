@@ -65,7 +65,7 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     // Build the full URL for retrieving the image
     const apiBaseUrl = process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
     const filename = response.data.filename;
-    const imageUrl = `${apiBaseUrl}/images/${filename}`;
+    const imageUrl = `${apiBaseUrl}/api/images/${filename}`;
 
     log('INFO', `Upload successful: '${fileName}' -> '${filename}' (${fileSize} bytes)`);
     res.json({
