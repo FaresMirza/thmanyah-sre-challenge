@@ -1,4 +1,0 @@
-creation_rules:
-  - path_regex: thmanyah/.*/secret\.yaml$
-    encrypted_regex: '^(data|stringData)$'
-    kms: 'arn:aws:kms:me-south-1:654654596998:key/132ebe15-2b4e-4fa5-8ecc-724d72c75f8d'
