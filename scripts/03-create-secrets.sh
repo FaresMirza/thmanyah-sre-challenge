@@ -134,7 +134,7 @@ create_sealed_secret "api-secret" "api-ns" "$REPO_ROOT/infra/thmanyah/api/sealed
     "JWT_SECRET=$JWT_SECRET" \
     "DATABASE_URL=$DATABASE_URL" \
     "AUTH_SERVICE_URL=http://auth-service.auth-ns.svc.cluster.local:4000" \
-    "IMAGE_SERVICE_URL=http://image-service.image-ns.svc.cluster.local:8000"
+    "IMAGE_SERVICE_URL=http://image-service.image-ns.svc.cluster.local:5000"
 
 echo ""
 
@@ -143,9 +143,11 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "🖼️  Image Service Secret (namespace: image-ns)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 create_sealed_secret "image-secret" "image-ns" "$REPO_ROOT/infra/thmanyah/image/sealed-secret.yaml" \
+    "AUTH_SERVICE_URL=http://auth-service.auth-ns.svc.cluster.local:4000" \
     "MINIO_ENDPOINT=minio-service.minio-ns.svc.cluster.local:9000" \
     "MINIO_ACCESS_KEY=$MINIO_ROOT_USER" \
-    "MINIO_SECRET_KEY=$MINIO_ROOT_PASSWORD"
+    "MINIO_SECRET_KEY=$MINIO_ROOT_PASSWORD" \
+    "MINIO_BUCKET=images"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
