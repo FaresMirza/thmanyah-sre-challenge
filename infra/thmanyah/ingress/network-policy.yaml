@@ -11,17 +11,18 @@ spec:
     - Ingress
     - Egress
   ingress:
-    # Allow traffic from anywhere on HTTP/HTTPS ports
+    # Allow external traffic on HTTP/HTTPS
     - ports:
         - protocol: TCP
           port: 80
         - protocol: TCP
           port: 443
-    # Allow health checks from kubelet
+    # Allow health checks from kubelet (any source)
     - ports:
         - protocol: TCP
           port: 10254
   egress:
+    # Allow DNS resolution
     - to:
         - namespaceSelector:
             matchLabels:
@@ -29,6 +30,13 @@ spec:
       ports:
         - protocol: UDP
           port: 53
+    # Allow access to Kubernetes API server (no namespace restriction)
+    - ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 6443
+    # Allow egress to api-service
     - to:
         - namespaceSelector:
             matchLabels:
@@ -39,6 +47,7 @@ spec:
       ports:
         - protocol: TCP
           port: 3000
+    # Allow egress to auth-service
     - to:
         - namespaceSelector:
             matchLabels:
@@ -49,6 +58,7 @@ spec:
       ports:
         - protocol: TCP
           port: 4000
+    # Allow egress to image-service
     - to:
         - namespaceSelector:
             matchLabels:
