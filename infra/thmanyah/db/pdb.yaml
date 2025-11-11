@@ -2,7 +2,7 @@ apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: db-pdb
-  namespace: db-ns
+  namespace: data-ns
 spec:
   minAvailable: 1
   selector:
