@@ -5,6 +5,8 @@ const health = require("./health");
 const registerRoute = require("./routes/register");
 const loginRoute = require("./routes/login");
 const privateRoute = require("./routes/private");
+const uploadRoute = require("./routes/upload");
+const imageRoute = require("./routes/image");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,6 +22,12 @@ app.get("/livez", health.liveness);
 app.use("/register", registerRoute);
 app.use("/login", loginRoute);
 app.use("/private", privateRoute);
+
+// Upload endpoint
+app.use(uploadRoute);
+
+// Image retrieval endpoint
+app.use(imageRoute);
 
 // Mount API routes
 app.use("/api", routes);

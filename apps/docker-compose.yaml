@@ -1,0 +1,87 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: authdb
+    # 🔒 internal only (no port exposure)
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    environment:
+      - DATABASE_URL=postgres://admin:admin123@db:5432/authdb?sslmode=disable
+      - JWT_SECRET=your-secret-key-change-in-production
+    # 🔒 internal service
+    depends_on:
+      - db
+
+  api-service:
+    build: ./api-service
+    container_name: api-service
+    environment:
+      - DATABASE_URL=postgres://admin:admin123@db:5432/authdb?sslmode=disable
+      - AUTH_SERVICE_URL=http://auth-service:4000
+      - IMAGE_SERVICE_URL=http://image-service:5000
+    ports:
+      - "3000:3000" # 🌍 only public port
+    depends_on:
+      - auth-service
+      - db
+      - image-service
+
+  image-service:
+    build: ./image-service
+    container_name: image-service
+    environment:
+      - AUTH_SERVICE_URL=http://auth-service:4000
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=admin
+      - MINIO_SECRET_KEY=admin123
+      - MINIO_BUCKET=images
+    # 🔒 internal only
+    depends_on:
+      - auth-service
+      - minio
+
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: admin123
+    command: server /data --console-address ":9001"
+    ports:
+      - "9001:9001" # optional: console only
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio-init:
+    image: quay.io/minio/mc
+    container_name: minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set myminio http://minio:9000 admin admin123;
+      mc mb myminio/images --ignore-existing;
+      mc anonymous set download myminio/images;
+      echo 'MinIO bucket initialized';
+      exit 0;
+      "
+
+volumes:
+  db_data:
+  minio_data:

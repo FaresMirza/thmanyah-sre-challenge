@@ -60,3 +60,73 @@ kubectl apply -f argocd/applicationset.yaml
 
 # 4️⃣ Verify
 kubectl get pods -A
+```
+
+---
+
+## 📡 4. API Endpoints
+
+### Authentication
+
+#### Register User
+```bash
+curl -X POST http://localhost:3000/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"testuser","password":"password123"}'
+```
+
+#### Login
+```bash
+curl -X POST http://localhost:3000/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"testuser","password":"password123"}'
+```
+
+Response:
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+### Image Upload & Retrieval
+
+#### Upload Image
+```bash
+curl -X POST http://localhost:3000/upload \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -F "file=@image.png"
+```
+
+Response:
+```json
+{
+  "message": "Uploaded successfully",
+  "filename": "7c393cab-f916-48de-9ce3-480c6c2c158d_image.png",
+  "url": "http://localhost:3000/images/7c393cab-f916-48de-9ce3-480c6c2c158d_image.png"
+}
+```
+
+#### Retrieve Image
+```bash
+curl -X GET http://localhost:3000/images/7c393cab-f916-48de-9ce3-480c6c2c158d_image.png \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -o downloaded.png
+```
+
+**Architecture Flow:**
+```
+User → API Service (port 3000)
+  ↓
+  → Auth Service (JWT verification)
+  → Image Service (internal)
+    → MinIO (S3 storage)
+```
+
+**Security:**
+- ✅ All requests authenticated via JWT
+- ✅ Image service not publicly exposed
+- ✅ MinIO accessed only internally
+- ✅ File streaming (memory efficient)
+
+
