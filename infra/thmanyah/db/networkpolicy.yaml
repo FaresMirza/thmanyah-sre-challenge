@@ -15,10 +15,10 @@ spec:
     - from:
         - namespaceSelector:
             matchLabels:
-              name: auth-ns
+              kubernetes.io/metadata.name: auth-ns
         - namespaceSelector:
             matchLabels:
-              name: api-ns
+              kubernetes.io/metadata.name: api-ns
       ports:
         - protocol: TCP
           port: 5432

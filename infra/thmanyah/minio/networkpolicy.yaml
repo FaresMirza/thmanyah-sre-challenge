@@ -15,7 +15,7 @@ spec:
     - from:
         - namespaceSelector:
             matchLabels:
-              name: image-ns
+              kubernetes.io/metadata.name: image-ns
       ports:
         - protocol: TCP
           port: 9000   

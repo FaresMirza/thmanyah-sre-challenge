@@ -15,7 +15,10 @@ spec:
     - from:
         - namespaceSelector:
             matchLabels:
-              name: api-ns
+              kubernetes.io/metadata.name: api-ns
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-ns
       ports:
         - protocol: TCP
           port: 5000
@@ -24,10 +27,10 @@ spec:
     - to:
         - namespaceSelector:
             matchLabels:
-              name: auth-ns
+              kubernetes.io/metadata.name: auth-ns
         - namespaceSelector:
             matchLabels:
-              name: minio-ns
+              kubernetes.io/metadata.name: minio-ns
       ports:
         - protocol: TCP
           port: 4000   # Auth verify

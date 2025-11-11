@@ -11,10 +11,10 @@ spec:
     - from:
         - namespaceSelector:
             matchLabels:
-              name: ingress-ns
+              kubernetes.io/metadata.name: ingress-ns
         - namespaceSelector:
             matchLabels:
-              name: auth-ns
+              kubernetes.io/metadata.name: auth-ns
       ports:
         - protocol: TCP
           port: 3000
@@ -22,10 +22,10 @@ spec:
     - to:
         - namespaceSelector:
             matchLabels:
-              name: auth-ns
+              kubernetes.io/metadata.name: auth-ns
         - namespaceSelector:
             matchLabels:
-              name: db-ns
+              kubernetes.io/metadata.name: db-ns
       ports:
         - protocol: TCP
           port: 4000
