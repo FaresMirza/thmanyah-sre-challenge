@@ -10,6 +10,7 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/upstream-vhost: "$service_name.$namespace.svc.cluster.local"
 spec:
   ingressClassName: nginx
   rules:
