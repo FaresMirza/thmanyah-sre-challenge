@@ -33,7 +33,7 @@ spec:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: api-ns
-        - podSelector:
+          podSelector:
             matchLabels:
               app: api
       ports:
@@ -44,7 +44,7 @@ spec:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: auth-ns
-        - podSelector:
+          podSelector:
             matchLabels:
               app: auth
       ports:
@@ -55,7 +55,7 @@ spec:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: image-ns
-        - podSelector:
+          podSelector:
             matchLabels:
               app: image
       ports:
