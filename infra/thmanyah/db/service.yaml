@@ -4,10 +4,11 @@ metadata:
   name: db
   namespace: data-ns
 spec:
+  clusterIP: None
   selector:
     app: db
   ports:
     - port: 5432
       targetPort: 5432
       protocol: TCP
-  type: ClusterIP
+      name: postgres

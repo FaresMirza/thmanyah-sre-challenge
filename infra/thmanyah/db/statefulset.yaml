@@ -1,11 +1,12 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: db-deployment
+  name: db
   namespace: data-ns
   labels:
     app: db
 spec:
+  serviceName: db
   replicas: 1
   selector:
     matchLabels:
@@ -21,12 +22,21 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5432
+              name: postgres
           envFrom:
             - secretRef:
                 name: db-secret
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
               name: db-storage
+              subPath: postgres
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
           readinessProbe:
             exec:
               command:
@@ -47,8 +57,14 @@ spec:
                 - thmanyah
             initialDelaySeconds: 15
             periodSeconds: 20
-      volumes:
-        - name: db-storage
-          persistentVolumeClaim:
-            claimName: db-pvc
       restartPolicy: Always
+  volumeClaimTemplates:
+    - metadata:
+        name: db-storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
+        storageClassName: standard
