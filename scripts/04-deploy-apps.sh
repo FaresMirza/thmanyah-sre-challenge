@@ -55,52 +55,31 @@ echo "📋 Deploying ApplicationSet..."
 kubectl apply -f "$REPO_ROOT/infra/thmanyah-applicationset.yaml"
 
 echo ""
-echo "⏳ Waiting for applications to be created..."
-sleep 10
+echo "⏳ Waiting for pods to be ready..."
+sleep 15
 
-echo ""
-echo "📊 Initial ArgoCD Applications Status:"
-kubectl get applications -n argocd
-
-# Wait for all applications to sync and become healthy
-echo ""
-echo "⏳ Waiting for applications to sync and become healthy..."
-echo "   This may take 3-5 minutes (ArgoCD health checks + metrics collection)..."
-echo "   - Initial sync: ~30s"
-echo "   - Metrics server startup: ~30s" 
-echo "   - HPA metric collection: ~30s"
-echo "   - ArgoCD health assessment: ~3 min (default reconciliation interval)"
-echo ""
-
-TIMEOUT=600  # 10 minutes
-INTERVAL=10
+# Wait for all pods to be running
+TIMEOUT=300  # 5 minutes
+INTERVAL=5
 ELAPSED=0
 
 while [ $ELAPSED -lt $TIMEOUT ]; do
-    # Get application statuses
-    APP_STATUS=$(kubectl get applications -n argocd -o json)
+    # Check pod status across all namespaces
+    TOTAL_PODS=$(kubectl get pods -n api-ns,auth-ns,image-ns,data-ns,minio-ns,ingress-ns --no-headers 2>/dev/null | wc -l | tr -d ' ')
+    RUNNING_PODS=$(kubectl get pods -n api-ns,auth-ns,image-ns,data-ns,minio-ns,ingress-ns --no-headers 2>/dev/null | grep -c "Running" || echo 0)
+    READY_PODS=$(kubectl get pods -n api-ns,auth-ns,image-ns,data-ns,minio-ns,ingress-ns --no-headers 2>/dev/null | grep -c "1/1.*Running" || echo 0)
     
-    # Count total applications
-    TOTAL=$(echo "$APP_STATUS" | jq -r '.items | length')
-    
-    # Count synced and healthy applications
-    SYNCED=$(echo "$APP_STATUS" | jq -r '[.items[] | select(.status.sync.status == "Synced")] | length')
-    HEALTHY=$(echo "$APP_STATUS" | jq -r '[.items[] | select(.status.health.status == "Healthy")] | length')
-    
-    echo "Progress: Synced: $SYNCED/$TOTAL | Healthy: $HEALTHY/$TOTAL (${ELAPSED}s elapsed)"
-    
-    # Check if all are synced and healthy
-    if [ "$SYNCED" -eq "$TOTAL" ] && [ "$HEALTHY" -eq "$TOTAL" ]; then
-        echo ""
-        echo "✅ All applications are synced and healthy!"
-        break
-    fi
-    
-    # Show any applications with issues
-    DEGRADED=$(echo "$APP_STATUS" | jq -r '[.items[] | select(.status.health.status == "Degraded" or .status.health.status == "Missing")] | length')
-    if [ "$DEGRADED" -gt 0 ]; then
-        echo "⚠️  Applications with issues:"
-        echo "$APP_STATUS" | jq -r '.items[] | select(.status.health.status == "Degraded" or .status.health.status == "Missing") | "   - \(.metadata.name): \(.status.health.status) - \(.status.sync.status)"'
+    if [ "$TOTAL_PODS" -eq 0 ]; then
+        echo "⏳ Waiting for pods to be created..."
+    else
+        echo "📊 Pods status: $READY_PODS/$TOTAL_PODS ready (${ELAPSED}s elapsed)"
+        
+        # Check if all pods are ready
+        if [ "$READY_PODS" -eq "$TOTAL_PODS" ] && [ "$TOTAL_PODS" -gt 0 ]; then
+            echo ""
+            echo "✅ All pods are running and ready!"
+            break
+        fi
     fi
     
     sleep $INTERVAL
@@ -109,12 +88,14 @@ done
 
 if [ $ELAPSED -ge $TIMEOUT ]; then
     echo ""
-    echo "⚠️  Timeout reached. Some applications may not be fully ready."
+    echo "⚠️  Timeout reached. Some pods may not be ready yet."
+    echo "   Check status with: kubectl get pods -A"
+    exit 1
 fi
-
+    sleep $INTERVAL
+    ELAPSED=$((ELAPSED + INTERVAL))
+done
 echo ""
-echo "📊 Final ArgoCD Applications Status:"
-kubectl get applications -n argocd
+echo "🎉 Deployment complete!"
 
-echo ""
-echo "✅ Deployment complete!"
+
