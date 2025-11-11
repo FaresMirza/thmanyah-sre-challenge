@@ -5,7 +5,11 @@ metadata:
   namespace: ingress-ns
   annotations:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-    nginx.ingress.kubernetes.io/enable-access-log: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
 spec:
   ingressClassName: nginx
   rules:
@@ -16,6 +20,20 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: api-external
+                name: api-service-proxy
                 port:
                   number: 3000
+          - path: /auth
+            pathType: Prefix
+            backend:
+              service:
+                name: auth-service-proxy
+                port:
+                  number: 4000
+          - path: /image
+            pathType: Prefix
+            backend:
+              service:
+                name: image-service-proxy
+                port:
+                  number: 5000
