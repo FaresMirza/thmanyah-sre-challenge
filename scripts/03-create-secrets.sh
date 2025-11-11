@@ -72,21 +72,17 @@ create_sealed_secret() {
     echo "✅ Created: $output_file"
 }
 
-echo "📝 This script will help you create sealed secrets for your cluster."
-echo "   You'll be prompted to enter values for each secret."
+echo "📝 Creating sealed secrets with default values..."
 echo ""
 
-# Database secret
+# Database secret - using default values
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "📊 Database Secret (namespace: data-ns)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-read -p "Enter POSTGRES_USER [admin]: " POSTGRES_USER
-POSTGRES_USER=${POSTGRES_USER:-admin}
-read -sp "Enter POSTGRES_PASSWORD [default: changeme]: " POSTGRES_PASSWORD
-echo ""
-POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme}
-read -p "Enter POSTGRES_DB [thmanyah]: " POSTGRES_DB
-POSTGRES_DB=${POSTGRES_DB:-thmanyah}
+POSTGRES_USER="admin"
+POSTGRES_PASSWORD="changeme"
+POSTGRES_DB="thmanyah"
+echo "Using defaults: POSTGRES_USER=$POSTGRES_USER, POSTGRES_DB=$POSTGRES_DB"
 
 create_sealed_secret "db-secret" "data-ns" "$REPO_ROOT/infra/thmanyah/db/sealed-secret.yaml" \
     "POSTGRES_USER=$POSTGRES_USER" \
@@ -95,15 +91,13 @@ create_sealed_secret "db-secret" "data-ns" "$REPO_ROOT/infra/thmanyah/db/sealed-
 
 echo ""
 
-# MinIO secret
+# MinIO secret - using default values
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🗄️  MinIO Secret (namespace: minio-ns)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-read -p "Enter MINIO_ROOT_USER [minioadmin]: " MINIO_ROOT_USER
-MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
-read -sp "Enter MINIO_ROOT_PASSWORD [default: minioadmin]: " MINIO_ROOT_PASSWORD
-echo ""
-MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
+MINIO_ROOT_USER="minioadmin"
+MINIO_ROOT_PASSWORD="minioadmin"
+echo "Using defaults: MINIO_ROOT_USER=$MINIO_ROOT_USER"
 
 create_sealed_secret "minio-secret" "minio-ns" "$REPO_ROOT/infra/thmanyah/minio/sealed-secret.yaml" \
     "MINIO_ROOT_USER=$MINIO_ROOT_USER" \
@@ -111,16 +105,12 @@ create_sealed_secret "minio-secret" "minio-ns" "$REPO_ROOT/infra/thmanyah/minio/
 
 echo ""
 
-# JWT Secret (used by both API and Auth)
+# JWT Secret (used by both API and Auth) - generate automatically
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🔑 JWT Secret (shared between API and Auth)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-read -sp "Enter JWT_SECRET (press Enter to generate random): " JWT_SECRET
-echo ""
-if [ -z "$JWT_SECRET" ]; then
-    JWT_SECRET=$(openssl rand -hex 32)
-    echo "✅ Generated random JWT_SECRET: $JWT_SECRET"
-fi
+JWT_SECRET=$(openssl rand -hex 32)
+echo "✅ Generated random JWT_SECRET"
 
 # Auth secret
 echo ""

@@ -33,6 +33,8 @@ spec:
                 - pg_isready
                 - -U
                 - admin
+                - -d
+                - thmanyah
             initialDelaySeconds: 10
             periodSeconds: 10
           livenessProbe:
@@ -41,6 +43,8 @@ spec:
                 - pg_isready
                 - -U
                 - admin
+                - -d
+                - thmanyah
             initialDelaySeconds: 15
             periodSeconds: 20
       volumes:
