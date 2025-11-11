@@ -38,7 +38,17 @@ echo "⏳ Waiting for Sealed Secrets controller..."
 kubectl wait --for=condition=available --timeout=180s deployment/sealed-secrets-controller -n kube-system
 
 echo ""
-echo "✅ ArgoCD and Sealed Secrets installed successfully!"
+echo "📊 Installing Metrics Server..."
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+echo "⏳ Patching Metrics Server for Kind..."
+kubectl patch deployment metrics-server -n kube-system --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
+
+echo "⏳ Waiting for Metrics Server..."
+kubectl wait --for=condition=available --timeout=180s deployment/metrics-server -n kube-system
+
+echo ""
+echo "✅ ArgoCD, Sealed Secrets, and Metrics Server installed successfully!"
 echo ""
 echo "📊 ArgoCD Pods:"
 kubectl get pods -n argocd

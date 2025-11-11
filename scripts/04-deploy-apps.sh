@@ -65,7 +65,11 @@ kubectl get applications -n argocd
 # Wait for all applications to sync and become healthy
 echo ""
 echo "⏳ Waiting for applications to sync and become healthy..."
-echo "   This may take several minutes..."
+echo "   This may take 3-5 minutes (ArgoCD health checks + metrics collection)..."
+echo "   - Initial sync: ~30s"
+echo "   - Metrics server startup: ~30s" 
+echo "   - HPA metric collection: ~30s"
+echo "   - ArgoCD health assessment: ~3 min (default reconciliation interval)"
 echo ""
 
 TIMEOUT=600  # 10 minutes
