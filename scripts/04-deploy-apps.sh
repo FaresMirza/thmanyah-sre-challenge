@@ -38,15 +38,31 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 
 echo "📦 Applying sealed secrets..."
 if [ -f "$REPO_ROOT/infra/thmanyah/db/sealed-secret.yaml" ]; then
+    # Apply application secrets
     kubectl apply -f "$REPO_ROOT/infra/thmanyah/db/sealed-secret.yaml"
     kubectl apply -f "$REPO_ROOT/infra/thmanyah/api/sealed-secret.yaml"
     kubectl apply -f "$REPO_ROOT/infra/thmanyah/auth/sealed-secret.yaml"
     kubectl apply -f "$REPO_ROOT/infra/thmanyah/image/sealed-secret.yaml"
     kubectl apply -f "$REPO_ROOT/infra/thmanyah/minio/sealed-secret.yaml"
+    
+    # Apply registry credentials if they exist
+    if [ -f "$REPO_ROOT/infra/thmanyah/api/regcred-sealed.yaml" ]; then
+        kubectl apply -f "$REPO_ROOT/infra/thmanyah/api/regcred-sealed.yaml"
+        kubectl apply -f "$REPO_ROOT/infra/thmanyah/auth/regcred-sealed.yaml"
+        kubectl apply -f "$REPO_ROOT/infra/thmanyah/image/regcred-sealed.yaml"
+        echo "✅ Registry credentials applied"
+    fi
+    
+    # Apply TLS certificate if it exists
+    if [ -f "$REPO_ROOT/infra/thmanyah/api/tls-secret-sealed.yaml" ]; then
+        kubectl apply -f "$REPO_ROOT/infra/thmanyah/api/tls-secret-sealed.yaml"
+        echo "✅ TLS certificate applied"
+    fi
+    
     echo "✅ Sealed secrets applied"
 else
     echo "⚠️  No sealed secrets found. You need to create them first."
-    echo "   Run: bash scripts/02-create-secrets.sh"
+    echo "   Run: bash scripts/03-create-secrets.sh"
     exit 1
 fi
 
