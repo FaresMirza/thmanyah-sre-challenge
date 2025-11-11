@@ -117,7 +117,7 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🔐 Auth Service Secret (namespace: auth-ns)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-DATABASE_URL="postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@db.data-ns.svc.cluster.local:5432/$POSTGRES_DB"
+DATABASE_URL="postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@db.data-ns.svc.cluster.local:5432/$POSTGRES_DB?sslmode=disable"
 echo "Database URL: $DATABASE_URL"
 
 create_sealed_secret "auth-secret" "auth-ns" "$REPO_ROOT/infra/thmanyah/auth/sealed-secret.yaml" \
