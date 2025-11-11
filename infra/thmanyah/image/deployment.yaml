@@ -18,7 +18,7 @@ spec:
       containers:
         - name: image
           image: ghcr.io/faresmirza/image-service:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5000
           envFrom:
