@@ -134,7 +134,8 @@ create_sealed_secret "api-secret" "api-ns" "$REPO_ROOT/infra/thmanyah/api/sealed
     "JWT_SECRET=$JWT_SECRET" \
     "DATABASE_URL=$DATABASE_URL" \
     "AUTH_SERVICE_URL=http://auth-service.auth-ns.svc.cluster.local:4000" \
-    "IMAGE_SERVICE_URL=http://image-service.image-ns.svc.cluster.local:5000"
+    "IMAGE_SERVICE_URL=http://image-service.image-ns.svc.cluster.local:5000" \
+    "API_BASE_URL=https://thmanyah.local"
 
 echo ""
 
