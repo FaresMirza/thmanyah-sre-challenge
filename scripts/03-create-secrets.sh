@@ -150,6 +150,82 @@ create_sealed_secret "image-secret" "image-ns" "$REPO_ROOT/infra/thmanyah/image/
     "MINIO_BUCKET=images"
 
 echo ""
+
+# Registry credentials
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🔐 Docker Registry Credentials"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Check if GITHUB_PAT is set
+if [ -z "$GITHUB_PAT" ]; then
+    echo "⚠️  GITHUB_PAT environment variable not set."
+    echo "   Please set it with: export GITHUB_PAT=your_github_token"
+    echo "   Skipping registry credential creation..."
+else
+    GITHUB_USERNAME="${GITHUB_USERNAME:-faresmirza}"
+    GITHUB_EMAIL="${GITHUB_EMAIL:-faresmirza93@gmail.com}"
+    
+    echo "Using GitHub username: $GITHUB_USERNAME"
+    
+    # Create docker-registry secrets for each namespace
+    for namespace in api-ns auth-ns image-ns; do
+        echo "Creating registry secret for namespace: $namespace"
+        
+        kubectl create secret docker-registry ghcr-regcred \
+            --namespace=$namespace \
+            --docker-server=ghcr.io \
+            --docker-username=$GITHUB_USERNAME \
+            --docker-password=$GITHUB_PAT \
+            --docker-email=$GITHUB_EMAIL \
+            --dry-run=client -o yaml | kubeseal -o yaml > "$REPO_ROOT/infra/thmanyah/${namespace%-ns}/regcred-sealed.yaml"
+        
+        echo "✅ Created: $REPO_ROOT/infra/thmanyah/${namespace%-ns}/regcred-sealed.yaml"
+    done
+fi
+
+echo ""
+
+# TLS Certificate
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🔒 TLS Certificate (namespace: api-ns)"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+TLS_CERT_FILE="$REPO_ROOT/tls.crt"
+TLS_KEY_FILE="$REPO_ROOT/tls.key"
+
+# Check if certificate files exist
+if [ -f "$TLS_CERT_FILE" ] && [ -f "$TLS_KEY_FILE" ]; then
+    echo "Using existing TLS certificate files"
+    kubectl create secret tls thmanyah-tls \
+        --namespace=api-ns \
+        --cert="$TLS_CERT_FILE" \
+        --key="$TLS_KEY_FILE" \
+        --dry-run=client -o yaml | kubeseal -o yaml > "$REPO_ROOT/infra/thmanyah/api/tls-secret-sealed.yaml"
+    echo "✅ Created: $REPO_ROOT/infra/thmanyah/api/tls-secret-sealed.yaml"
+else
+    echo "⚠️  TLS certificate files not found at $TLS_CERT_FILE and $TLS_KEY_FILE"
+    echo "   Generating self-signed certificate..."
+    
+    # Generate self-signed certificate
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+        -keyout /tmp/tls.key \
+        -out /tmp/tls.crt \
+        -subj "/CN=thmanyah.local/O=Thmanyah" \
+        &> /dev/null
+    
+    kubectl create secret tls thmanyah-tls \
+        --namespace=api-ns \
+        --cert=/tmp/tls.crt \
+        --key=/tmp/tls.key \
+        --dry-run=client -o yaml | kubeseal -o yaml > "$REPO_ROOT/infra/thmanyah/api/tls-secret-sealed.yaml"
+    
+    echo "✅ Created: $REPO_ROOT/infra/thmanyah/api/tls-secret-sealed.yaml (self-signed)"
+    
+    # Clean up temp files
+    rm -f /tmp/tls.key /tmp/tls.crt
+fi
+
+echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🎉 All sealed secrets created successfully!"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -160,5 +236,11 @@ echo "   ✅ $REPO_ROOT/infra/thmanyah/minio/sealed-secret.yaml"
 echo "   ✅ $REPO_ROOT/infra/thmanyah/auth/sealed-secret.yaml"
 echo "   ✅ $REPO_ROOT/infra/thmanyah/api/sealed-secret.yaml"
 echo "   ✅ $REPO_ROOT/infra/thmanyah/image/sealed-secret.yaml"
+if [ -n "$GITHUB_PAT" ]; then
+echo "   ✅ $REPO_ROOT/infra/thmanyah/api/regcred-sealed.yaml"
+echo "   ✅ $REPO_ROOT/infra/thmanyah/auth/regcred-sealed.yaml"
+echo "   ✅ $REPO_ROOT/infra/thmanyah/image/regcred-sealed.yaml"
+fi
+echo "   ✅ $REPO_ROOT/infra/thmanyah/api/tls-secret-sealed.yaml"
 echo ""
 echo "💡 These secrets are encrypted and safe to commit to Git!"
