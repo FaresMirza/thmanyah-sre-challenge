@@ -4,10 +4,14 @@ metadata:
   name: api-ingress
   namespace: api-ns
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - thmanyah.local
+      secretName: thmanyah-tls
   rules:
     - host: thmanyah.local
       http:
