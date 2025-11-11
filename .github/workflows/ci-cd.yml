@@ -67,6 +67,10 @@ jobs:
           NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "New version: $NEW_VERSION"
+          
+          # Convert repository owner to lowercase for Docker
+          REPO_OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "repo_owner=$REPO_OWNER_LOWER" >> $GITHUB_OUTPUT
       
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -81,8 +85,8 @@ jobs:
           context: ./apps/${{ matrix.service }}
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.service }}:${{ steps.version.outputs.version }}
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.service }}:latest
+            ${{ env.REGISTRY }}/${{ steps.version.outputs.repo_owner }}/${{ matrix.service }}:${{ steps.version.outputs.version }}
+            ${{ env.REGISTRY }}/${{ steps.version.outputs.repo_owner }}/${{ matrix.service }}:latest
       
       - name: Create and push tag
         if: matrix.service == 'api-service'
