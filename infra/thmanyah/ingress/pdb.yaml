@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ingress-nginx-pdb
+  namespace: ingress-ns
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: ingress-nginx
