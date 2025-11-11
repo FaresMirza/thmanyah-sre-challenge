@@ -8,13 +8,11 @@ spec:
     matchLabels:
       app: api
   ingress:
+    # Only allow traffic from ingress controller
     - from:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: ingress-ns
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: auth-ns
       ports:
         - protocol: TCP
           port: 3000
@@ -27,17 +25,22 @@ spec:
       ports:
         - protocol: UDP
           port: 53
-    # Allow traffic to auth and db services
+    # Allow traffic to auth, image, and db services
     - to:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: auth-ns
         - namespaceSelector:
             matchLabels:
+              kubernetes.io/metadata.name: image-ns
+        - namespaceSelector:
+            matchLabels:
               kubernetes.io/metadata.name: db-ns
       ports:
         - protocol: TCP
           port: 4000
+        - protocol: TCP
+          port: 5000
         - protocol: TCP
           port: 5432
   policyTypes:

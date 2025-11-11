@@ -12,13 +12,11 @@ spec:
     - Egress
 
   ingress:
+    # Only allow traffic from API service
     - from:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: api-ns
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: ingress-ns
       ports:
         - protocol: TCP
           port: 5000

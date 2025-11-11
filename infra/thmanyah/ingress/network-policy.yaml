@@ -36,7 +36,7 @@ spec:
           port: 443
         - protocol: TCP
           port: 6443
-    # Allow egress to api-service
+    # Allow egress to api-service only (API is the gateway)
     - to:
         - namespaceSelector:
             matchLabels:
@@ -47,25 +47,3 @@ spec:
       ports:
         - protocol: TCP
           port: 3000
-    # Allow egress to auth-service
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: auth-ns
-          podSelector:
-            matchLabels:
-              app: auth
-      ports:
-        - protocol: TCP
-          port: 4000
-    # Allow egress to image-service
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: image-ns
-          podSelector:
-            matchLabels:
-              app: image
-      ports:
-        - protocol: TCP
-          port: 5000
