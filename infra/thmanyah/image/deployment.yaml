@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-deployment
+  namespace: image-ns
+  labels:
+    app: image
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: image
+  template:
+    metadata:
+      labels:
+        app: image
+    spec:
+      containers:
+        - name: image
+          image: ghcr.io/faresmirza/image-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          envFrom:
+            - secretRef:
+                name: image-secret
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+      imagePullSecrets:
+        - name: ghcr-regcred
+      restartPolicy: Always

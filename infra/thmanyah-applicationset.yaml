@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: thmanyah-applications
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/FaresMirza/thmanyah-sre-challenge.git
+        revision: main
+        directories:
+          - path: infra/thmanyah/*
+  template:
+    metadata:
+      name: '{{path.basename}}-app'
+      labels:
+        project: thmanyah
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/FaresMirza/thmanyah-sre-challenge.git
+        targetRevision: main
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{path.basename}}-ns'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - PruneLast=true

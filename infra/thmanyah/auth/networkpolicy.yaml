@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: auth-network-policy
+  namespace: auth-ns
+spec:
+  podSelector:
+    matchLabels:
+      app: auth
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: api-ns
+      ports:
+        - protocol: TCP
+          port: 4000
+
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: db-ns
+      ports:
+        - protocol: TCP
+          port: 5432

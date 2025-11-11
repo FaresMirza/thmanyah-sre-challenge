@@ -23,6 +23,10 @@ s3 = boto3.client(
 def health():
     return {"status": "ok"}
 
+@app.get("/livez")
+def live():
+    return {"status": "alive"}
+
 @app.post("/upload")
 def upload_image(file: UploadFile = File(...), authorization: str = Header(None)):
     if not authorization:

@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: image-network-policy
+  namespace: image-ns
+spec:
+  podSelector:
+    matchLabels:
+      app: image
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: api-ns
+      ports:
+        - protocol: TCP
+          port: 5000
+
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: auth-ns
+        - namespaceSelector:
+            matchLabels:
+              name: minio-ns
+      ports:
+        - protocol: TCP
+          port: 4000   # Auth verify
+        - protocol: TCP
+          port: 9000   # MinIO API

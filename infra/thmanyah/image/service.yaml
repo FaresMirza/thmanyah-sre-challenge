@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: image-service
+  namespace: image-ns
+spec:
+  selector:
+    app: image
+  ports:
+    - port: 5000
+      targetPort: 5000
+      protocol: TCP
+  type: ClusterIP
