@@ -20,7 +20,12 @@ if (!fs.existsSync(uploadDir)) {
   log('INFO', `Created upload directory: ${uploadDir}`);
 }
 
-const upload = multer({ dest: uploadDir });
+const upload = multer({ 
+  dest: uploadDir,
+  limits: {
+    fileSize: 50 * 1024 * 1024 // 50MB limit
+  }
+});
 
 const IMAGE_SERVICE_URL = process.env.IMAGE_SERVICE_URL || "http://image-service:5000";
 
