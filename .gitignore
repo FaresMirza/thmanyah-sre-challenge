@@ -90,6 +90,14 @@ htmlcov/
 .env.production.local
 
 # ============================================
+# Kubernetes Secrets (plain text)
+# ============================================
+# Ignore plain text secrets, but allow sealed secrets
+**/secret.yaml
+!**/sealed-secret.yaml
+.sops.yaml
+
+# ============================================
 # IDE and editors
 # ============================================
 .vscode/

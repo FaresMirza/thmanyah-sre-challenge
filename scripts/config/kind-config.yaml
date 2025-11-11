@@ -1,0 +1,18 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  disableDefaultCNI: true
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - containerPort: 30080   # map NodePort 30080 → host 80
+        hostPort: 80
+        protocol: TCP
+      - containerPort: 30443   # map NodePort 30443 → host 443
+        hostPort: 443
+        protocol: TCP
+      - containerPort: 30300   # map NodePort 30300 → host 3000 (Grafana)
+        hostPort: 3000
+        protocol: TCP
+  - role: worker
+  - role: worker
