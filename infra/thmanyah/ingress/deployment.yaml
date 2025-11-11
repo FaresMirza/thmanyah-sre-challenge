@@ -15,12 +15,26 @@ spec:
       labels:
         app: ingress-nginx
     spec:
+      serviceAccountName: ingress-nginx
       containers:
         - name: controller
           image: registry.k8s.io/ingress-nginx/controller:v1.12.0
           args:
             - /nginx-ingress-controller
             - --ingress-class=nginx
+            - --watch-ingress-without-class=true
+            - --watch-namespace=
+            - --publish-service=$(POD_NAMESPACE)/ingress-nginx
+            - --election-id=ingress-controller-leader
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
           ports:
             - name: http
               containerPort: 80
@@ -30,7 +44,13 @@ spec:
             httpGet:
               path: /healthz
               port: 10254
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
           readinessProbe:
             httpGet:
               path: /healthz
               port: 10254
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
