@@ -7,6 +7,7 @@ const loginRoute = require("./routes/login");
 const privateRoute = require("./routes/private");
 const uploadRoute = require("./routes/upload");
 const imageRoute = require("./routes/image");
+const imagesRoute = require("./routes/images");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -41,7 +42,10 @@ app.use("/private", privateRoute);
 // Upload endpoint
 app.use(uploadRoute);
 
-// Image retrieval endpoint
+// Images gallery endpoint - matches /images (for ingress rewrite from /api/images)
+app.use("/images", imagesRoute);
+
+// Image retrieval endpoint - matches /images/:filename
 app.use(imageRoute);
 
 // Mount API routes

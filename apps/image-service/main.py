@@ -76,6 +76,49 @@ def health():
 def live():
     return {"status": "alive"}
 
+@app.get("/list")
+def list_images(authorization: str = Header(None)):
+    """List all images in the MinIO bucket"""
+    if not authorization:
+        logger.warning(f"List images attempt without authorization")
+        raise HTTPException(status_code=401, detail="Missing token")
+
+    # Verify token with auth-service
+    try:
+        logger.debug(f"Verifying token with auth service for list images request")
+        verify = requests.get(f"{AUTH_URL}/verify", headers={"Authorization": authorization}, timeout=2)
+        if verify.status_code != 200:
+            logger.warning(f"List images attempt with invalid token")
+            raise HTTPException(status_code=401, detail="Invalid token")
+    except requests.exceptions.Timeout:
+        logger.error("Auth service timeout during list images verification")
+        raise HTTPException(status_code=503, detail="Auth service timeout")
+    except Exception as e:
+        logger.error(f"Auth service error during list images: {e}")
+        raise HTTPException(status_code=503, detail="Auth service unavailable")
+
+    try:
+        logger.info(f"Listing images from bucket '{MINIO_BUCKET}'")
+        response = s3.list_objects_v2(Bucket=MINIO_BUCKET)
+        
+        if 'Contents' not in response:
+            logger.info(f"No images found in bucket '{MINIO_BUCKET}'")
+            return {"images": [], "count": 0}
+        
+        images = []
+        for obj in response['Contents']:
+            images.append({
+                "filename": obj['Key'],
+                "size": obj['Size'],
+                "last_modified": obj['LastModified'].isoformat()
+            })
+        
+        logger.info(f"Successfully listed {len(images)} images from bucket '{MINIO_BUCKET}'")
+        return {"images": images, "count": len(images)}
+    except Exception as e:
+        logger.error(f"Error listing images: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to list images: {str(e)}")
+
 @app.post("/upload")
 def upload_image(file: UploadFile = File(...), authorization: str = Header(None)):
     client_ip = "unknown"
