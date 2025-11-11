@@ -117,7 +117,7 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🔐 Auth Service Secret (namespace: auth-ns)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-DATABASE_URL="postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres-service.data-ns.svc.cluster.local:5432/$POSTGRES_DB"
+DATABASE_URL="postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@db.data-ns.svc.cluster.local:5432/$POSTGRES_DB"
 echo "Database URL: $DATABASE_URL"
 
 create_sealed_secret "auth-secret" "auth-ns" "$REPO_ROOT/infra/thmanyah/auth/sealed-secret.yaml" \
@@ -132,6 +132,7 @@ echo "🌐 API Service Secret (namespace: api-ns)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 create_sealed_secret "api-secret" "api-ns" "$REPO_ROOT/infra/thmanyah/api/sealed-secret.yaml" \
     "JWT_SECRET=$JWT_SECRET" \
+    "DATABASE_URL=$DATABASE_URL" \
     "AUTH_SERVICE_URL=http://auth-service.auth-ns.svc.cluster.local:8080" \
     "IMAGE_SERVICE_URL=http://image-service.image-ns.svc.cluster.local:8000"
 

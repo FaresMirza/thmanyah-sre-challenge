@@ -35,7 +35,7 @@ spec:
               kubernetes.io/metadata.name: image-ns
         - namespaceSelector:
             matchLabels:
-              kubernetes.io/metadata.name: db-ns
+              kubernetes.io/metadata.name: data-ns
       ports:
         - protocol: TCP
           port: 4000

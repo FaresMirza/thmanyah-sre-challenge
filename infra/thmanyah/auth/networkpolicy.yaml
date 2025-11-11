@@ -37,7 +37,7 @@ spec:
     - to:
         - namespaceSelector:
             matchLabels:
-              kubernetes.io/metadata.name: db-ns
+              kubernetes.io/metadata.name: data-ns
       ports:
         - protocol: TCP
           port: 5432
