@@ -12,6 +12,10 @@ data:
         cluster: 'thmanyah-cluster'
         environment: 'production'
 
+    # Alert rules configuration
+    rule_files:
+      - '/etc/prometheus/alerts/*.yml'
+
     scrape_configs:
       # Scrape Prometheus itself
       - job_name: 'prometheus'
