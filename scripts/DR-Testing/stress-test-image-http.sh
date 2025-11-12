@@ -51,15 +51,15 @@ def http_stress():
         except (URLError, Exception) as e:
             errors += 1
         
-        # Moderate delay for ~70-85% CPU target - ~33 requests/sec per process
-        time.sleep(0.03)
+        # Optimized delay for ~70-80% CPU target - ~22 requests/sec per process
+        time.sleep(0.045)
     
     print(f"Process completed: {count} requests, {errors} errors")
 
 print("Running HTTP stress test...")
 print("  Target: http://localhost:5000/healthz")
-print("  Processes: 1 (moderate load)")
-print("  Rate: ~33 requests/sec per pod")
+print("  Processes: 1 (optimized load)")
+print("  Rate: ~22 requests/sec per pod")
 print("  Duration: 3 minutes")
 print()
 
@@ -100,13 +100,14 @@ echo ""
 # Monitor for new pods every 5 seconds and stress them too
 echo "Monitoring for newly scaled pods..."
 echo "Will automatically stress new pods as they appear"
-echo "Press Ctrl+C to stop monitoring"
+echo "Duration: 3 minutes (matching stress test duration)"
 echo "=========================================="
 echo ""
 
 INITIAL_PODS="$PODS"
+MONITOR_END_TIME=$(($(date +%s) + 180))  # Monitor for 3 minutes
 
-while true; do
+while [ $(date +%s) -lt $MONITOR_END_TIME ]; do
   sleep 5
   
   # Get current pods
@@ -129,3 +130,9 @@ while true; do
     fi
   done
 done
+
+echo ""
+echo "=========================================="
+echo "Monitoring period complete!"
+echo "All stress tests should finish shortly..."
+echo "=========================================="
