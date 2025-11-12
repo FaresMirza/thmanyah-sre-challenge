@@ -158,7 +158,7 @@ echo "🔐 Docker Registry Credentials"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # Set default GITHUB_PAT if not provided
-GITHUB_PAT="${GITHUB_PAT:-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}"
+GITHUB_PAT="${GITHUB_PAT:-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}"
 GITHUB_USERNAME="${GITHUB_USERNAME:-faresmirza}"
 GITHUB_EMAIL="${GITHUB_EMAIL:-faresmirza93@gmail.com}"
 
