@@ -32,6 +32,10 @@ spec:
                 secretKeyRef:
                   name: grafana-secret
                   key: GF_SECURITY_ADMIN_PASSWORD
+            - name: GF_SERVER_ROOT_URL
+              value: "https://thmanyah.local/grafana"
+            - name: GF_SERVER_SERVE_FROM_SUB_PATH
+              value: "true"
           volumeMounts:
             - name: grafana-storage
               mountPath: /var/lib/grafana
