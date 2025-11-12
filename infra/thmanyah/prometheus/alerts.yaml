@@ -173,7 +173,7 @@ data:
             expr: |
               kube_horizontalpodautoscaler_status_current_replicas{namespace=~"api-ns|auth-ns|image-ns"}
               > kube_horizontalpodautoscaler_spec_min_replicas{namespace=~"api-ns|auth-ns|image-ns"}
-            for: 2m
+            for: 5s
             labels:
               severity: warning
               component: kubernetes
@@ -199,13 +199,13 @@ data:
           - alert: PersistentVolumeClaimPending
             expr: |
               kube_persistentvolumeclaim_status_phase{phase="Pending",namespace=~"data-ns|prometheus-ns"} == 1
-            for: 5m
+            for: 5s
             labels:
               severity: warning
               component: storage
             annotations:
               summary: "PVC {{ $labels.persistentvolumeclaim }} is pending"
-              description: "PVC {{ $labels.persistentvolumeclaim }} in {{ $labels.namespace }} has been pending for 5 minutes"
+              description: "PVC {{ $labels.persistentvolumeclaim }} in {{ $labels.namespace }} has been pending for 5 seconds"
 
       # ===== Network Alerts =====
       - name: networking
@@ -226,13 +226,13 @@ data:
           - alert: PodNotReady
             expr: |
               kube_pod_status_phase{namespace=~"api-ns|auth-ns|image-ns|data-ns",phase!="Running"} == 1
-            for: 5m
+            for: 5s
             labels:
               severity: warning
               component: networking
             annotations:
               summary: "Pod {{ $labels.pod }} is not ready"
-              description: "Pod {{ $labels.pod }} in {{ $labels.namespace }} has been in {{ $labels.phase }} state for 5 minutes"
+              description: "Pod {{ $labels.pod }} in {{ $labels.namespace }} has been in {{ $labels.phase }} state for 5 seconds"
 
       # ===== HPA Alerts =====
       - name: autoscaling
@@ -265,7 +265,7 @@ data:
             expr: |
               (kube_horizontalpodautoscaler_status_current_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}
               / kube_horizontalpodautoscaler_spec_min_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}) > 1
-            for: 1m
+            for: 5s
             labels:
               severity: warning
               component: image-service
@@ -277,7 +277,7 @@ data:
             expr: |
               kube_horizontalpodautoscaler_status_desired_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}
               > kube_horizontalpodautoscaler_status_current_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}
-            for: 30s
+            for: 5s
             labels:
               severity: info
               component: image-service
