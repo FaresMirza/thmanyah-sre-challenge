@@ -51,15 +51,15 @@ def http_stress():
         except (URLError, Exception) as e:
             errors += 1
         
-        # Light delay for ~70-80% CPU target - ~25 requests/sec per process
-        time.sleep(0.04)
+        # Moderate delay for ~70-85% CPU target - ~33 requests/sec per process
+        time.sleep(0.03)
     
     print(f"Process completed: {count} requests, {errors} errors")
 
 print("Running HTTP stress test...")
 print("  Target: http://localhost:5000/healthz")
-print("  Processes: 1 (light load)")
-print("  Rate: ~25 requests/sec per pod")
+print("  Processes: 1 (moderate load)")
+print("  Rate: ~33 requests/sec per pod")
 print("  Duration: 3 minutes")
 print()
 

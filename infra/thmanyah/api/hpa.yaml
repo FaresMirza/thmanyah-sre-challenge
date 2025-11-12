@@ -35,8 +35,8 @@ spec:
           periodSeconds: 30
       selectPolicy: Max
     scaleDown:
-      stabilizationWindowSeconds: 120
+      stabilizationWindowSeconds: 300
       policies:
         - type: Pods
           value: 1
-          periodSeconds: 60
+          periodSeconds: 120
