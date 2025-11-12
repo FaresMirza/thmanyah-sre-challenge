@@ -77,7 +77,7 @@ echo "⏳ Waiting for pods to be ready..."
 sleep 15
 
 # Wait for all pods to be running
-TIMEOUT=300  # 5 minutes
+TIMEOUT=500  
 INTERVAL=5
 ELAPSED=0
 
