@@ -23,13 +23,13 @@ data:
       group_by: ['alertname', 'cluster', 'service']
       
       # Wait time before sending initial notification
-      group_wait: 10s
+      group_wait: 1s
       
       # Wait time before sending updates for grouped alerts
-      group_interval: 10s
+      group_interval: 1s
       
       # Minimum time between notifications for the same group
-      repeat_interval: 12h
+      repeat_interval: 5m
 
       # Child routes for specific alert types
       routes:
@@ -37,29 +37,29 @@ data:
         - match:
             severity: critical
           receiver: 'critical-alerts'
-          group_wait: 5s
-          repeat_interval: 4h
+          group_wait: 1s
+          repeat_interval: 5m
           continue: true
 
         # Warning alerts - standard notification
         - match:
             severity: warning
           receiver: 'warning-alerts'
-          group_wait: 30s
-          repeat_interval: 12h
+          group_wait: 1s
+          repeat_interval: 5m
 
         # Info alerts - daily digest
         - match:
             severity: info
           receiver: 'info-alerts'
-          group_wait: 5m
-          repeat_interval: 24h
+          group_wait: 1s
+          repeat_interval: 5m
 
         # Database specific alerts
         - match:
             component: database
           receiver: 'database-alerts'
-          repeat_interval: 4h
+          repeat_interval: 5m
           continue: true
 
         # API service alerts

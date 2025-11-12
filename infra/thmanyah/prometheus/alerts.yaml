@@ -8,7 +8,7 @@ data:
     groups:
       # ===== Service Availability Alerts =====
       - name: service_availability
-        interval: 30s
+        interval: 5s
         rules:
           - alert: ServiceDown
             expr: up{job=~"api-service|auth-service|image-service"} == 0
@@ -32,7 +32,7 @@ data:
 
       # ===== API Service Alerts =====
       - name: api_service
-        interval: 30s
+        interval: 5s
         rules:
           - alert: APIHighErrorRate
             expr: |
@@ -71,7 +71,7 @@ data:
 
       # ===== Auth Service Alerts =====
       - name: auth_service
-        interval: 30s
+        interval: 5s
         rules:
           - alert: AuthServiceHighErrorRate
             expr: |
@@ -111,7 +111,7 @@ data:
 
       # ===== Image Service Alerts =====
       - name: image_service
-        interval: 30s
+        interval: 5s
         rules:
           - alert: ImageServiceHighErrorRate
             expr: |
@@ -140,7 +140,7 @@ data:
 
       # ===== Database Alerts =====
       - name: database
-        interval: 30s
+        interval: 5s
         rules:
           - alert: PostgreSQLDown
             expr: up{job="postgres"} == 0
@@ -166,7 +166,7 @@ data:
 
       # ===== Resource Utilization Alerts =====
       - name: resource_utilization
-        interval: 30s
+        interval: 5s
         rules:
           # Alert when HPA is scaling due to high resource usage
           - alert: ServiceHighResourceUsage
@@ -194,7 +194,7 @@ data:
 
       # ===== Storage Alerts =====
       - name: storage
-        interval: 30s
+        interval: 5s
         rules:
           - alert: PersistentVolumeClaimPending
             expr: |
@@ -209,7 +209,7 @@ data:
 
       # ===== Network Alerts =====
       - name: networking
-        interval: 30s
+        interval: 5s
         rules:
           - alert: IngressHighErrorRate
             expr: |
@@ -236,7 +236,7 @@ data:
 
       # ===== HPA Alerts =====
       - name: autoscaling
-        interval: 30s
+        interval: 5s
         rules:
           - alert: HPAMaxedOut
             expr: |
@@ -287,7 +287,7 @@ data:
 
       # ===== Prometheus Self-Monitoring =====
       - name: prometheus_self
-        interval: 30s
+        interval: 5s
         rules:
           - alert: PrometheusConfigReloadFailed
             expr: prometheus_config_last_reload_successful == 0
