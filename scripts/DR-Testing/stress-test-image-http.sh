@@ -51,21 +51,21 @@ def http_stress():
         except (URLError, Exception) as e:
             errors += 1
         
-        # Balanced delay for ~65-75% CPU target - ~20 requests/sec per process
-        time.sleep(0.055)
+        # Moderate load for stable 65-70% CPU - ~30 requests/sec per process
+        time.sleep(0.033)
     
     print(f"Process completed: {count} requests, {errors} errors")
 
 print("Running HTTP stress test...")
 print("  Target: http://localhost:5000/healthz")
-print("  Processes: 1 (balanced load)")
-print("  Rate: ~18 requests/sec per pod")
+print("  Processes: 2 (moderate load)")
+print("  Rate: ~30 requests/sec per process (~60 total)")
 print("  Duration: 5 minutes")
 print()
 
-# Start 1 process tuned for 85-95% CPU utilization
+# Start 2 processes for stable 65-70% CPU utilization
 processes = []
-for i in range(1):
+for i in range(2):
     p = multiprocessing.Process(target=http_stress)
     p.start()
     processes.append(p)

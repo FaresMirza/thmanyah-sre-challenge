@@ -39,13 +39,13 @@ spec:
             httpGet:
               path: /healthz
               port: 4000
-            initialDelaySeconds: 5
+            initialDelaySeconds: 30
             periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /livez
               port: 4000
-            initialDelaySeconds: 10
+            initialDelaySeconds: 60
             periodSeconds: 15
       imagePullSecrets:
         - name: ghcr-regcred
