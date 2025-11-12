@@ -253,7 +253,7 @@ data:
           - alert: HPAScalingDisabled
             expr: |
               kube_horizontalpodautoscaler_status_condition{condition="ScalingActive",status="false"} == 1
-            for: 5s
+            for: 30s
             labels:
               severity: warning
               component: autoscaling
