@@ -61,7 +61,7 @@ data:
 
           - alert: APILowThroughput
             expr: sum(rate(http_requests_total{job="api-service"}[5m])) < 0.1
-            for: 5s
+            for: 5m
             labels:
               severity: info
               component: api-service
@@ -173,13 +173,13 @@ data:
             expr: |
               kube_horizontalpodautoscaler_status_current_replicas{namespace=~"api-ns|auth-ns|image-ns"}
               > kube_horizontalpodautoscaler_spec_min_replicas{namespace=~"api-ns|auth-ns|image-ns"}
-            for: 5s
+            for: 2m
             labels:
-              severity: warning
+              severity: info
               component: kubernetes
             annotations:
-              summary: "Service in {{ $labels.namespace }} is under high load"
-              description: "HPA {{ $labels.horizontalpodautoscaler }} has scaled to {{ $value }} replicas due to high resource usage"
+              summary: "Service scaled in {{ $labels.namespace }}"
+              description: "HPA {{ $labels.horizontalpodautoscaler }} scaled to {{ $value }} replicas"
 
           - alert: PodCrashLooping
             expr: |
@@ -265,24 +265,24 @@ data:
             expr: |
               kube_horizontalpodautoscaler_status_current_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}
               > kube_horizontalpodautoscaler_spec_min_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}
-            for: 30s
-            labels:
-              severity: warning
-              component: image-service
-            annotations:
-              summary: "Image service is under high load"
-              description: "Image service has scaled from {{ query \"kube_horizontalpodautoscaler_spec_min_replicas{namespace='image-ns',horizontalpodautoscaler='image-hpa'}\" | first | value }} to {{ query \"kube_horizontalpodautoscaler_status_current_replicas{namespace='image-ns',horizontalpodautoscaler='image-hpa'}\" | first | value }} replicas due to high load"
-
-          - alert: ImageServiceScalingUp
-            expr: |
-              delta(kube_horizontalpodautoscaler_status_current_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}[1m]) > 0
-            for: 5s
+            for: 1m
             labels:
               severity: info
               component: image-service
             annotations:
-              summary: "Image service is scaling up"
-              description: "Image service HPA is scaling from {{ query \"kube_horizontalpodautoscaler_status_current_replicas{namespace='image-ns',horizontalpodautoscaler='image-hpa'} offset 1m\" | first | value }} to {{ query \"kube_horizontalpodautoscaler_status_desired_replicas{namespace='image-ns',horizontalpodautoscaler='image-hpa'}\" | first | value }} replicas to handle increased load"
+              summary: "Image service scaled up"
+              description: "Image service scaled to {{ $value }} replicas (above minimum)"
+
+          - alert: ImageServiceScalingUp
+            expr: |
+              delta(kube_horizontalpodautoscaler_status_current_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}[2m]) > 0
+            for: 30s
+            labels:
+              severity: info
+              component: image-service
+            annotations:
+              summary: "Image service is scaling"
+              description: "Image service HPA scaling event detected"
 
       # ===== Prometheus Self-Monitoring =====
       - name: prometheus_self
