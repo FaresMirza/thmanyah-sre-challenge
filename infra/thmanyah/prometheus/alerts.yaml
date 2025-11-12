@@ -225,18 +225,6 @@ data:
       - name: autoscaling
         interval: 5s
         rules:
-          - alert: HPAMaxedOut
-            expr: |
-              kube_horizontalpodautoscaler_status_current_replicas{namespace=~"api-ns|auth-ns|image-ns"}
-              >= kube_horizontalpodautoscaler_spec_max_replicas{namespace=~"api-ns|auth-ns|image-ns"}
-            for: 1m
-            labels:
-              severity: warning
-              component: autoscaling
-            annotations:
-              summary: "HPA {{ $labels.horizontalpodautoscaler }} has reached max replicas"
-              description: "HPA {{ $labels.horizontalpodautoscaler }} in {{ $labels.namespace }} has been at maximum capacity ({{ $value }} replicas) for 1 minute"
-
           - alert: HPAScalingDisabled
             expr: |
               kube_horizontalpodautoscaler_status_condition{condition="ScalingActive",status="false"} == 1
