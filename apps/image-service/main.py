@@ -5,6 +5,11 @@ import logging
 import time
 from datetime import datetime
 
+# Custom filter to exclude health check endpoints from Uvicorn access logs
+class HealthCheckFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return record.getMessage().find("/healthz") == -1 and record.getMessage().find("/livez") == -1
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -12,6 +17,9 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 logger = logging.getLogger(__name__)
+
+# Apply filter to uvicorn access logger
+logging.getLogger("uvicorn.access").addFilter(HealthCheckFilter())
 
 app = FastAPI()
 
