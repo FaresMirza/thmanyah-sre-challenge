@@ -106,11 +106,11 @@ data:
       # Critical alerts receiver
       - name: 'critical-alerts'
         # Slack notifications for critical alerts
-        # slack_configs:
-        #   - channel: '#alerts-critical'
-        #     title: '🚨 Critical Alert'
-        #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
-        #     send_resolved: true
+        slack_configs:
+          - channel: '#alerts-critical'
+            title: '🚨 Critical Alert'
+            text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+            send_resolved: true
         
         # Email notifications (configure as needed)
         # email_configs:
@@ -129,48 +129,48 @@ data:
 
       # Warning alerts receiver
       - name: 'warning-alerts'
-        # slack_configs:
-        #   - channel: '#alerts-warning'
-        #     title: '⚠️ Warning Alert'
-        #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
-        #     send_resolved: true
+        slack_configs:
+          - channel: '#alerts-warning'
+            title: '⚠️ Warning Alert'
+            text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+            send_resolved: true
 
       # Info alerts receiver
       - name: 'info-alerts'
-        # slack_configs:
-        #   - channel: '#alerts-info'
-        #     title: 'ℹ️ Info Alert'
-        #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
-        #     send_resolved: true
+        slack_configs:
+          - channel: '#alerts-info'
+            title: 'ℹ️ Info Alert'
+            text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+            send_resolved: true
 
       # Database alerts receiver
       - name: 'database-alerts'
-        # slack_configs:
-        #   - channel: '#database-alerts'
-        #     title: '💾 Database Alert'
-        #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
-        #     send_resolved: true
+        slack_configs:
+          - channel: '#database-alerts'
+            title: '💾 Database Alert'
+            text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+            send_resolved: true
 
       # API service alerts receiver
       - name: 'api-alerts'
-        # slack_configs:
-        #   - channel: '#api-alerts'
-        #     title: '🌐 API Service Alert'
-        #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
-        #     send_resolved: true
+        slack_configs:
+          - channel: '#api-alerts'
+            title: '🌐 API Service Alert'
+            text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+            send_resolved: true
 
       # Auth service alerts receiver
       - name: 'auth-alerts'
-        # slack_configs:
-        #   - channel: '#auth-alerts'
-        #     title: '🔐 Auth Service Alert'
-        #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
-        #     send_resolved: true
+        slack_configs:
+          - channel: '#auth-alerts'
+            title: '🔐 Auth Service Alert'
+            text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+            send_resolved: true
 
       # Image service alerts receiver
       - name: 'image-alerts'
-        # slack_configs:
-        #   - channel: '#image-alerts'
-        #     title: '🖼️ Image Service Alert'
-        #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
-        #     send_resolved: true
+        slack_configs:
+          - channel: '#image-alerts'
+            title: '🖼️ Image Service Alert'
+            text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+            send_resolved: true
