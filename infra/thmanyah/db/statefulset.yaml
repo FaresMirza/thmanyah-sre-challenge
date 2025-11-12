@@ -15,6 +15,10 @@ spec:
     metadata:
       labels:
         app: db
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9187"
+        prometheus.io/path: "/metrics"
     spec:
       containers:
         - name: postgres
@@ -57,6 +61,26 @@ spec:
                 - thmanyah
             initialDelaySeconds: 15
             periodSeconds: 20
+        
+        # Postgres Exporter Sidecar
+        - name: postgres-exporter
+          image: prometheuscommunity/postgres-exporter:latest
+          ports:
+            - containerPort: 9187
+              name: metrics
+          env:
+            - name: DATA_SOURCE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: POSTGRES_CONNECTION_STRING
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
       restartPolicy: Always
   volumeClaimTemplates:
     - metadata:

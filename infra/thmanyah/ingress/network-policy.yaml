@@ -17,7 +17,7 @@ spec:
           port: 80
         - protocol: TCP
           port: 443
-    # Allow health checks from kubelet (any source)
+    # Allow health checks and Prometheus metrics scraping
     - ports:
         - protocol: TCP
           port: 10254
