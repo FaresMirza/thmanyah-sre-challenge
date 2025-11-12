@@ -263,8 +263,8 @@ data:
 
           - alert: ImageServiceHighLoad
             expr: |
-              (kube_horizontalpodautoscaler_status_current_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}
-              / kube_horizontalpodautoscaler_spec_min_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}) > 1
+              kube_horizontalpodautoscaler_status_current_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}
+              > kube_horizontalpodautoscaler_spec_min_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}
             for: 5s
             labels:
               severity: warning
@@ -283,7 +283,7 @@ data:
               component: image-service
             annotations:
               summary: "Image service is scaling up"
-              description: "Image service HPA is scaling up from {{ $labels.current_replicas }} to handle increased load"
+              description: "Image service HPA is scaling up to handle increased load (desired: {{ $value }} replicas)"
 
       # ===== Prometheus Self-Monitoring =====
       - name: prometheus_self
