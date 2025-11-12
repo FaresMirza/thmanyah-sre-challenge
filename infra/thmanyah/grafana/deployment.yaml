@@ -47,7 +47,7 @@ spec:
           claimName: grafana-pvc
       - name: datasources
         configMap:
-          name: grafana-datasource
+          name: grafana-datasources
       - name: dashboards-provisioning
         configMap:
           name: grafana-dashboards
