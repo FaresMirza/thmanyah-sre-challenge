@@ -26,12 +26,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: grafana-secret
-                  key: admin-user
+                  key: GF_SECURITY_ADMIN_USER
             - name: GF_SECURITY_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: grafana-secret
-                  key: admin-password
+                  key: GF_SECURITY_ADMIN_PASSWORD
           volumeMounts:
             - name: grafana-storage
               mountPath: /var/lib/grafana
