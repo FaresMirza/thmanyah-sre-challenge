@@ -168,19 +168,6 @@ data:
       - name: resource_utilization
         interval: 5s
         rules:
-          # Alert when HPA is scaling due to high resource usage
-          - alert: ServiceHighResourceUsage
-            expr: |
-              kube_horizontalpodautoscaler_status_current_replicas{namespace=~"api-ns|auth-ns|image-ns"}
-              > kube_horizontalpodautoscaler_spec_min_replicas{namespace=~"api-ns|auth-ns|image-ns"}
-            for: 2m
-            labels:
-              severity: info
-              component: kubernetes
-            annotations:
-              summary: "Service scaled in {{ $labels.namespace }}"
-              description: "HPA {{ $labels.horizontalpodautoscaler }} scaled to {{ $value }} replicas"
-
           - alert: PodCrashLooping
             expr: |
               rate(kube_pod_container_status_restarts_total{namespace=~"api-ns|auth-ns|image-ns|data-ns"}[15m]) > 0
@@ -272,17 +259,6 @@ data:
             annotations:
               summary: "Image service scaled up"
               description: "Image service scaled to {{ $value }} replicas (above minimum)"
-
-          - alert: ImageServiceScalingUp
-            expr: |
-              delta(kube_horizontalpodautoscaler_status_current_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}[2m]) > 0
-            for: 30s
-            labels:
-              severity: info
-              component: image-service
-            annotations:
-              summary: "Image service is scaling"
-              description: "Image service HPA scaling event detected"
 
           - alert: ImageServiceScalingDown
             expr: |
