@@ -56,7 +56,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/kube-state-metrics
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/kube-state-metrics/v2.10.1/examples/standard/service.yaml
 
 echo "⏳ Waiting for kube-state-metrics..."
-kubectl wait --for=condition=available --timeout=180s deployment/kube-state-metrics -n kube-system
+kubectl wait --for=condition=available --timeout=360s deployment/kube-state-metrics -n kube-system
 
 echo ""
 echo "✅ ArgoCD, Sealed Secrets, Metrics Server, and kube-state-metrics installed successfully!"
