@@ -25,7 +25,7 @@ spec:
           averageUtilization: 75
   behavior:
     scaleUp:
-      stabilizationWindowSeconds: 15
+      stabilizationWindowSeconds: 0
       policies:
         - type: Pods
           value: 2

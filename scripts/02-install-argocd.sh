@@ -44,6 +44,28 @@ kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/late
 echo "⏳ Patching Metrics Server for Kind..."
 kubectl patch deployment metrics-server -n kube-system --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
 
+echo "⏳ Increasing Metrics Server resources..."
+kubectl patch deployment metrics-server -n kube-system --type='json' -p='[
+  {
+    "op": "replace",
+    "path": "/spec/template/spec/containers/0/resources/requests/cpu",
+    "value": "500m"
+  },
+  {
+    "op": "replace",
+    "path": "/spec/template/spec/containers/0/resources/requests/memory",
+    "value": "512Mi"
+  },
+  {
+    "op": "add",
+    "path": "/spec/template/spec/containers/0/resources/limits",
+    "value": {
+      "cpu": "1000m",
+      "memory": "1Gi"
+    }
+  }
+]'
+
 echo "⏳ Waiting for Metrics Server..."
 kubectl wait --for=condition=available --timeout=180s deployment/metrics-server -n kube-system
 
