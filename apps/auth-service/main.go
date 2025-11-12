@@ -55,11 +55,7 @@ func main() {
 	}
 	defer db.Close()
 
-	// Test database connection
-	if err := db.Ping(); err != nil {
-		log.Fatalf("FATAL: Database ping failed: %v", err)
-	}
-	log.Printf("INFO: Database connection established successfully")
+	log.Printf("INFO: Database connection initialized (lazy connection)")
 
 	http.HandleFunc("/login", loggingMiddleware(handleLogin))
 	http.HandleFunc("/verify", loggingMiddleware(handleVerify))
