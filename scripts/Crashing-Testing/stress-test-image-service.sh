@@ -30,21 +30,24 @@ import time
 import sys
 
 def cpu_stress():
-    """Function to max out a single CPU core"""
+    """Function to use moderate CPU"""
     end_time = time.time() + 180  # 3 minutes
     while time.time() < end_time:
-        # Intensive calculation to consume CPU
-        _ = sum(i*i for i in range(10000))
+        # Moderate CPU usage - work for 0.8s, sleep for 0.2s (80% load)
+        start = time.time()
+        while time.time() - start < 0.8:
+            _ = sum(i*i for i in range(10000))
+        time.sleep(0.2)
 
 print("Running CPU stress test...")
-print("  CPUs: 4")
-print("  Load: 100%")
+print("  CPUs: 1")
+print("  Load: ~80%")
 print("  Duration: 3 minutes")
 print()
 
-# Start 4 processes to stress 4 CPU cores
+# Start only 1 process to avoid crashing the cluster
 processes = []
-for i in range(4):
+for i in range(1):
     p = multiprocessing.Process(target=cpu_stress)
     p.start()
     processes.append(p)
