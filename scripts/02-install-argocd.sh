@@ -49,7 +49,11 @@ kubectl wait --for=condition=available --timeout=180s deployment/metrics-server 
 
 echo ""
 echo "📈 Installing kube-state-metrics..."
-kubectl apply -f https://github.com/kubernetes/kube-state-metrics/releases/download/v2.10.1/kube-state-metrics-standard.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/kube-state-metrics/v2.10.1/examples/standard/cluster-role-binding.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/kube-state-metrics/v2.10.1/examples/standard/cluster-role.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/kube-state-metrics/v2.10.1/examples/standard/deployment.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/kube-state-metrics/v2.10.1/examples/standard/service-account.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/kube-state-metrics/v2.10.1/examples/standard/service.yaml
 
 echo "⏳ Waiting for kube-state-metrics..."
 kubectl wait --for=condition=available --timeout=180s deployment/kube-state-metrics -n kube-system
