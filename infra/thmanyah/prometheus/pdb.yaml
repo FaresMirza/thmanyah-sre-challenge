@@ -2,7 +2,7 @@ apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: prometheus-pdb
-  namespace: monitoring
+  namespace: prometheus-ns
   labels:
     app: prometheus
 spec:
