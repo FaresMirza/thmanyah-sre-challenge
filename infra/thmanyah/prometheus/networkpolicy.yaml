@@ -41,7 +41,7 @@ spec:
               kubernetes.io/metadata.name: api-ns
       ports:
         - protocol: TCP
-          port: 9102
+          port: 3000
     
     # Allow scraping Auth service
     - to:
@@ -50,7 +50,7 @@ spec:
               kubernetes.io/metadata.name: auth-ns
       ports:
         - protocol: TCP
-          port: 9103
+          port: 4000
     
     # Allow scraping Image service
     - to:
@@ -59,7 +59,7 @@ spec:
               kubernetes.io/metadata.name: image-ns
       ports:
         - protocol: TCP
-          port: 9104
+          port: 5000
     
     # Allow scraping PostgreSQL exporter
     - to:

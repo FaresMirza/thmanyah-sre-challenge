@@ -34,7 +34,7 @@ spec:
               app: prometheus
       ports:
         - protocol: TCP
-          port: 9103
+          port: 4000
 
   egress:
     # Allow DNS resolution
