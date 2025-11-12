@@ -132,45 +132,54 @@ data:
         "timezone": "browser",
         "panels": [
           {
-            "title": "Authentication Requests",
-            "type": "graph",
-            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+            "title": "Service Status",
+            "type": "stat",
+            "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
             "targets": [
               {
-                "expr": "rate(http_requests_total{job=\"auth-service\"}[5m])",
-                "legendFormat": "{{method}} {{path}}"
+                "expr": "up{job=\"auth-service\"}",
+                "legendFormat": "Status"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "mappings": [
+                  {"type": "value", "options": {"0": {"text": "Down", "color": "red"}}},
+                  {"type": "value", "options": {"1": {"text": "Up", "color": "green"}}}
+                ]
+              }
+            }
+          },
+          {
+            "title": "Memory Usage",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 9, "x": 6, "y": 0},
+            "targets": [
+              {
+                "expr": "go_memstats_alloc_bytes{job=\"auth-service\"}",
+                "legendFormat": "Allocated"
               }
             ]
           },
           {
-            "title": "Failed Authentications",
+            "title": "Goroutines",
             "type": "graph",
-            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+            "gridPos": {"h": 8, "w": 9, "x": 15, "y": 0},
             "targets": [
               {
-                "expr": "rate(http_requests_total{job=\"auth-service\",status=\"401\"}[5m])",
-                "legendFormat": "Failed logins"
+                "expr": "go_goroutines{job=\"auth-service\"}",
+                "legendFormat": "Goroutines"
               }
             ]
           },
           {
-            "title": "JWT Token Generation Rate",
+            "title": "GC Duration",
             "type": "graph",
             "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
             "targets": [
               {
-                "expr": "rate(jwt_tokens_generated_total{job=\"auth-service\"}[5m])"
-              }
-            ]
-          },
-          {
-            "title": "Database Query Time",
-            "type": "graph",
-            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
-            "targets": [
-              {
-                "expr": "rate(db_query_duration_seconds_sum{job=\"auth-service\"}[5m]) / rate(db_query_duration_seconds_count{job=\"auth-service\"}[5m])",
-                "legendFormat": "Avg query time"
+                "expr": "rate(go_gc_duration_seconds_sum{job=\"auth-service\"}[5m])",
+                "legendFormat": "GC Time"
               }
             ]
           }
@@ -178,7 +187,6 @@ data:
         "refresh": "30s",
         "schemaVersion": 16,
         "version": 0
-    }
     }
   
   image-service-dashboard.json: |
@@ -310,50 +318,54 @@ data:
         "timezone": "browser",
         "panels": [
           {
-            "title": "Request Rate by Path",
-            "type": "graph",
-            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+            "title": "Ingress Status",
+            "type": "stat",
+            "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
             "targets": [
               {
-                "expr": "rate(nginx_ingress_controller_requests{job=\"ingress-nginx\"}[5m])",
-                "legendFormat": "{{path}}"
+                "expr": "up{job=\"ingress-nginx\"}",
+                "legendFormat": "Status"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "mappings": [
+                  {"type": "value", "options": {"0": {"text": "Down", "color": "red"}}},
+                  {"type": "value", "options": {"1": {"text": "Up", "color": "green"}}}
+                ]
+              }
+            }
+          },
+          {
+            "title": "Memory Usage",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 9, "x": 6, "y": 0},
+            "targets": [
+              {
+                "expr": "go_memstats_alloc_bytes{job=\"ingress-nginx\"}",
+                "legendFormat": "Allocated"
               }
             ]
           },
           {
-            "title": "Response Codes",
+            "title": "Goroutines",
             "type": "graph",
-            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+            "gridPos": {"h": 8, "w": 9, "x": 15, "y": 0},
             "targets": [
               {
-                "expr": "rate(nginx_ingress_controller_requests{job=\"ingress-nginx\"}[5m])",
-                "legendFormat": "{{status}}"
+                "expr": "go_goroutines{job=\"ingress-nginx\"}",
+                "legendFormat": "Goroutines"
               }
             ]
           },
           {
-            "title": "Ingress Throughput",
+            "title": "GC Duration",
             "type": "graph",
             "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
             "targets": [
               {
-                "expr": "rate(nginx_ingress_controller_request_size_sum{job=\"ingress-nginx\"}[5m])",
-                "legendFormat": "Request"
-              },
-              {
-                "expr": "rate(nginx_ingress_controller_response_size_sum{job=\"ingress-nginx\"}[5m])",
-                "legendFormat": "Response"
-              }
-            ]
-          },
-          {
-            "title": "Backend Response Time",
-            "type": "graph",
-            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
-            "targets": [
-              {
-                "expr": "histogram_quantile(0.95, rate(nginx_ingress_controller_response_duration_seconds_bucket{job=\"ingress-nginx\"}[5m]))",
-                "legendFormat": "p95"
+                "expr": "rate(go_gc_duration_seconds_sum{job=\"ingress-nginx\"}[5m])",
+                "legendFormat": "GC Time"
               }
             ]
           }
@@ -361,5 +373,4 @@ data:
         "refresh": "30s",
         "schemaVersion": 16,
         "version": 0
-    }
     }
