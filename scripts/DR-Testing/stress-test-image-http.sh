@@ -37,7 +37,7 @@ import multiprocessing
 
 def http_stress():
     """Make steady HTTP requests to generate moderate CPU load"""
-    end_time = time.time() + 70  # 1 minute 10 seconds
+    end_time = time.time() + 180  # 3 minutes
     count = 0
     errors = 0
     
@@ -51,19 +51,19 @@ def http_stress():
         except (URLError, Exception) as e:
             errors += 1
         
-        # Very light delay for ~80-90% CPU target - ~12 requests/sec per process
-        time.sleep(0.08)
+        # Very light delay for ~60-65% CPU target - ~10 requests/sec per process
+        time.sleep(0.1)
     
     print(f"Process completed: {count} requests, {errors} errors")
 
 print("Running HTTP stress test...")
 print("  Target: http://localhost:5000/healthz")
-print("  Processes: 1 (light load)")
-print("  Rate: ~12 requests/sec per pod")
-print("  Duration: 1 minute 10 seconds")
+print("  Processes: 1 (very light load)")
+print("  Rate: ~10 requests/sec per pod")
+print("  Duration: 3 minutes")
 print()
 
-# Start 1 process for light, sustained load
+# Start 1 process tuned for 85-95% CPU utilization
 processes = []
 for i in range(1):
     p = multiprocessing.Process(target=http_stress)
