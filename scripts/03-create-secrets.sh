@@ -152,6 +152,20 @@ create_sealed_secret "image-secret" "image-ns" "$REPO_ROOT/infra/thmanyah/image/
 
 echo ""
 
+# Grafana secret
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📊 Grafana Secret (namespace: grafana-ns)"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+GRAFANA_ADMIN_USER="admin"
+GRAFANA_ADMIN_PASSWORD="admin"
+echo "Using defaults: GRAFANA_ADMIN_USER=$GRAFANA_ADMIN_USER"
+
+create_sealed_secret "grafana-secret" "grafana-ns" "$REPO_ROOT/infra/thmanyah/grafana/sealed-secret.yaml" \
+    "GF_SECURITY_ADMIN_USER=$GRAFANA_ADMIN_USER" \
+    "GF_SECURITY_ADMIN_PASSWORD=$GRAFANA_ADMIN_PASSWORD"
+
+echo ""
+
 # Registry credentials
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🔐 Docker Registry Credentials"
@@ -183,7 +197,7 @@ echo ""
 
 # TLS Certificate
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🔒 TLS Certificate (namespace: api-ns)"
+echo "🔒 TLS Certificate (for api-ns and grafana-ns)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # Use temporary files for certificate generation
@@ -201,7 +215,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 
 echo "✅ Generated temporary self-signed certificate"
 
-# Create sealed secret from the certificate files
+# Create sealed secret for api-ns
 kubectl create secret tls thmanyah-tls \
     --namespace=api-ns \
     --cert="$TLS_CERT_FILE" \
@@ -209,6 +223,15 @@ kubectl create secret tls thmanyah-tls \
     --dry-run=client -o yaml | kubeseal -o yaml > "$REPO_ROOT/infra/thmanyah/api/tls-secret-sealed.yaml"
 
 echo "✅ Created: $REPO_ROOT/infra/thmanyah/api/tls-secret-sealed.yaml"
+
+# Create sealed secret for grafana-ns
+kubectl create secret tls thmanyah-tls \
+    --namespace=grafana-ns \
+    --cert="$TLS_CERT_FILE" \
+    --key="$TLS_KEY_FILE" \
+    --dry-run=client -o yaml | kubeseal -o yaml > "$REPO_ROOT/infra/thmanyah/grafana/tls-secret-sealed.yaml"
+
+echo "✅ Created: $REPO_ROOT/infra/thmanyah/grafana/tls-secret-sealed.yaml"
 
 # Clean up temporary certificate files
 rm -f "$TLS_CERT_FILE" "$TLS_KEY_FILE"
@@ -224,10 +247,12 @@ echo "   ✅ $REPO_ROOT/infra/thmanyah/minio/sealed-secret.yaml"
 echo "   ✅ $REPO_ROOT/infra/thmanyah/auth/sealed-secret.yaml"
 echo "   ✅ $REPO_ROOT/infra/thmanyah/api/sealed-secret.yaml"
 echo "   ✅ $REPO_ROOT/infra/thmanyah/image/sealed-secret.yaml"
+echo "   ✅ $REPO_ROOT/infra/thmanyah/grafana/sealed-secret.yaml"
 echo "   ✅ $REPO_ROOT/infra/thmanyah/api/regcred-sealed.yaml"
 echo "   ✅ $REPO_ROOT/infra/thmanyah/auth/regcred-sealed.yaml"
 echo "   ✅ $REPO_ROOT/infra/thmanyah/image/regcred-sealed.yaml"
 echo "   ✅ $REPO_ROOT/infra/thmanyah/api/tls-secret-sealed.yaml"
+echo "   ✅ $REPO_ROOT/infra/thmanyah/grafana/tls-secret-sealed.yaml"
 echo ""
 echo "💡 These secrets are encrypted and safe to commit to Git!"
 echo ""

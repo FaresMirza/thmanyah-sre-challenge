@@ -44,6 +44,7 @@ if [ -f "$REPO_ROOT/infra/thmanyah/db/sealed-secret.yaml" ]; then
     kubectl apply -f "$REPO_ROOT/infra/thmanyah/auth/sealed-secret.yaml"
     kubectl apply -f "$REPO_ROOT/infra/thmanyah/image/sealed-secret.yaml"
     kubectl apply -f "$REPO_ROOT/infra/thmanyah/minio/sealed-secret.yaml"
+    kubectl apply -f "$REPO_ROOT/infra/thmanyah/grafana/sealed-secret.yaml"
     
     # Apply registry credentials if they exist
     if [ -f "$REPO_ROOT/infra/thmanyah/api/regcred-sealed.yaml" ]; then
@@ -53,10 +54,11 @@ if [ -f "$REPO_ROOT/infra/thmanyah/db/sealed-secret.yaml" ]; then
         echo "✅ Registry credentials applied"
     fi
     
-    # Apply TLS certificate if it exists
+    # Apply TLS certificates if they exist
     if [ -f "$REPO_ROOT/infra/thmanyah/api/tls-secret-sealed.yaml" ]; then
         kubectl apply -f "$REPO_ROOT/infra/thmanyah/api/tls-secret-sealed.yaml"
-        echo "✅ TLS certificate applied"
+        kubectl apply -f "$REPO_ROOT/infra/thmanyah/grafana/tls-secret-sealed.yaml"
+        echo "✅ TLS certificates applied"
     fi
     
     echo "✅ Sealed secrets applied"
