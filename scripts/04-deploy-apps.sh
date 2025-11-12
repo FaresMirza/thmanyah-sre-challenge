@@ -83,7 +83,7 @@ while [ $ELAPSED -lt $TIMEOUT ]; do
     # Check pod status across all namespaces
     TOTAL_PODS=$(kubectl get pods -A --no-headers 2>/dev/null | grep -E '(api-ns|auth-ns|image-ns|data-ns|minio-ns|ingress-ns|prometheus-ns)' | wc -l | tr -d ' ')
     RUNNING_PODS=$(kubectl get pods -A --no-headers 2>/dev/null | grep -E '(api-ns|auth-ns|image-ns|data-ns|minio-ns|ingress-ns|prometheus-ns)' | grep -c "Running" || echo 0)
-    READY_PODS=$(kubectl get pods -A --no-headers 2>/dev/null | grep -E '(api-ns|auth-ns|image-ns|data-ns|minio-ns|ingress-ns|prometheus-ns)' | grep -E "1/1.*Running" | wc -l | tr -d ' ')
+    READY_PODS=$(kubectl get pods -A --no-headers 2>/dev/null | grep -E '(api-ns|auth-ns|image-ns|data-ns|minio-ns|ingress-ns|prometheus-ns)' | grep -E "[0-9]+/[0-9]+.*Running" | awk '{split($3,a,"/"); if(a[1]==a[2]) print}' | wc -l | tr -d ' ')
     
     if [ "$TOTAL_PODS" -eq 0 ]; then
         echo "⏳ Waiting for pods to be created..."
