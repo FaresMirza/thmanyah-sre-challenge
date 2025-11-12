@@ -37,7 +37,7 @@ import multiprocessing
 
 def http_stress():
     """Make steady HTTP requests to generate moderate CPU load"""
-    end_time = time.time() + 180  # 3 minutes
+    end_time = time.time() + 300  # 5 minutes
     count = 0
     errors = 0
     
@@ -59,8 +59,8 @@ def http_stress():
 print("Running HTTP stress test...")
 print("  Target: http://localhost:5000/healthz")
 print("  Processes: 1 (balanced load)")
-print("  Rate: ~20 requests/sec per pod")
-print("  Duration: 3 minutes")
+print("  Rate: ~18 requests/sec per pod")
+print("  Duration: 5 minutes")
 print()
 
 # Start 1 process tuned for 85-95% CPU utilization
@@ -77,7 +77,7 @@ for p in processes:
 
 print()
 print("HTTP stress test completed!")
-' &
+' > /dev/null 2>&1 &
 }
 
 # Start stress test on all pods in background
@@ -100,12 +100,12 @@ echo ""
 # Monitor for new pods every 5 seconds and stress them too
 echo "Monitoring for newly scaled pods..."
 echo "Will automatically stress new pods as they appear"
-echo "Duration: 3 minutes (matching stress test duration)"
+echo "Duration: 5 minutes (matching stress test duration)"
 echo "=========================================="
 echo ""
 
 INITIAL_PODS="$PODS"
-MONITOR_END_TIME=$(($(date +%s) + 180))  # Monitor for 3 minutes
+MONITOR_END_TIME=$(($(date +%s) + 300))  # Monitor for 5 minutes
 
 while [ $(date +%s) -lt $MONITOR_END_TIME ]; do
   sleep 5
