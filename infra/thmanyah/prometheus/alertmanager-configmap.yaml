@@ -1,0 +1,176 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: prometheus-ns
+data:
+  alertmanager.yml: |
+    global:
+      resolve_timeout: 5m
+      # Slack webhook URL loaded from secret
+      slack_api_url: '${SLACK_API_URL}'
+
+    # Templates for custom notifications
+    templates:
+      - '/etc/alertmanager-templates/*.tmpl'
+
+    # Route tree for alert notifications
+    route:
+      # Default receiver for all alerts
+      receiver: 'default-receiver'
+      
+      # Group alerts by these labels
+      group_by: ['alertname', 'cluster', 'service']
+      
+      # Wait time before sending initial notification
+      group_wait: 10s
+      
+      # Wait time before sending updates for grouped alerts
+      group_interval: 10s
+      
+      # Minimum time between notifications for the same group
+      repeat_interval: 12h
+
+      # Child routes for specific alert types
+      routes:
+        # Critical alerts - immediate notification
+        - match:
+            severity: critical
+          receiver: 'critical-alerts'
+          group_wait: 5s
+          repeat_interval: 4h
+          continue: true
+
+        # Warning alerts - standard notification
+        - match:
+            severity: warning
+          receiver: 'warning-alerts'
+          group_wait: 30s
+          repeat_interval: 12h
+
+        # Info alerts - daily digest
+        - match:
+            severity: info
+          receiver: 'info-alerts'
+          group_wait: 5m
+          repeat_interval: 24h
+
+        # Database specific alerts
+        - match:
+            component: database
+          receiver: 'database-alerts'
+          repeat_interval: 4h
+          continue: true
+
+        # API service alerts
+        - match:
+            component: api-service
+          receiver: 'api-alerts'
+          continue: true
+
+        # Auth service alerts
+        - match:
+            component: auth-service
+          receiver: 'auth-alerts'
+          continue: true
+
+        # Image service alerts
+        - match:
+            component: image-service
+          receiver: 'image-alerts'
+          continue: true
+
+    # Inhibition rules - prevent certain alerts when others are firing
+    inhibit_rules:
+      # Inhibit warning alerts if critical alert is firing for same service
+      - source_match:
+          severity: 'critical'
+        target_match:
+          severity: 'warning'
+        equal: ['alertname', 'component', 'instance']
+
+      # Inhibit all alerts if service is down
+      - source_match:
+          alertname: 'ServiceDown'
+        target_match_re:
+          alertname: '.*'
+        equal: ['component']
+
+    # Receivers - notification endpoints
+    receivers:
+      # Default receiver - console logs only
+      - name: 'default-receiver'
+        # webhook_configs:
+        #   - url: 'http://localhost:5001/'
+
+      # Critical alerts receiver
+      - name: 'critical-alerts'
+        # Slack notifications for critical alerts
+        # slack_configs:
+        #   - channel: '#alerts-critical'
+        #     title: '🚨 Critical Alert'
+        #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        #     send_resolved: true
+        
+        # Email notifications (configure as needed)
+        # email_configs:
+        #   - to: 'oncall@example.com'
+        #     from: 'alertmanager@example.com'
+        #     smarthost: 'smtp.example.com:587'
+        #     auth_username: 'alertmanager@example.com'
+        #     auth_password: 'password'
+        #     headers:
+        #       Subject: '🚨 Critical Alert: {{ .GroupLabels.alertname }}'
+        
+        # PagerDuty integration (configure as needed)
+        # pagerduty_configs:
+        #   - service_key: 'YOUR_PAGERDUTY_SERVICE_KEY'
+        #     description: '{{ .GroupLabels.alertname }}: {{ .CommonAnnotations.summary }}'
+
+      # Warning alerts receiver
+      - name: 'warning-alerts'
+        # slack_configs:
+        #   - channel: '#alerts-warning'
+        #     title: '⚠️ Warning Alert'
+        #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        #     send_resolved: true
+
+      # Info alerts receiver
+      - name: 'info-alerts'
+        # slack_configs:
+        #   - channel: '#alerts-info'
+        #     title: 'ℹ️ Info Alert'
+        #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        #     send_resolved: true
+
+      # Database alerts receiver
+      - name: 'database-alerts'
+        # slack_configs:
+        #   - channel: '#database-alerts'
+        #     title: '💾 Database Alert'
+        #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        #     send_resolved: true
+
+      # API service alerts receiver
+      - name: 'api-alerts'
+        # slack_configs:
+        #   - channel: '#api-alerts'
+        #     title: '🌐 API Service Alert'
+        #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        #     send_resolved: true
+
+      # Auth service alerts receiver
+      - name: 'auth-alerts'
+        # slack_configs:
+        #   - channel: '#auth-alerts'
+        #     title: '🔐 Auth Service Alert'
+        #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        #     send_resolved: true
+
+      # Image service alerts receiver
+      - name: 'image-alerts'
+        # slack_configs:
+        #   - channel: '#image-alerts'
+        #     title: '🖼️ Image Service Alert'
+        #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        #     send_resolved: true

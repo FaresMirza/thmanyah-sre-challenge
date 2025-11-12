@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager
+  namespace: prometheus-ns
+  labels:
+    app: alertmanager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alertmanager
+  template:
+    metadata:
+      labels:
+        app: alertmanager
+    spec:
+      initContainers:
+      - name: config-init
+        image: bhgedigital/envsubst:latest
+        command: ['sh', '-c']
+        args:
+          - |
+            envsubst < /etc/alertmanager-template/alertmanager.yml > /etc/alertmanager/alertmanager.yml
+            echo "✅ Configuration processed"
+        env:
+        - name: SLACK_API_URL
+          valueFrom:
+            secretKeyRef:
+              name: alertmanager-secret
+              key: slack_api_url
+        volumeMounts:
+        - name: alertmanager-config-template
+          mountPath: /etc/alertmanager-template
+        - name: alertmanager-config-processed
+          mountPath: /etc/alertmanager
+      containers:
+      - name: alertmanager
+        image: prom/alertmanager:latest
+        args:
+          - '--config.file=/etc/alertmanager/alertmanager.yml'
+          - '--storage.path=/alertmanager'
+          - '--cluster.advertise-address=0.0.0.0:9093'
+          - '--log.level=info'
+        ports:
+        - containerPort: 9093
+          name: web
+          protocol: TCP
+        - containerPort: 9094
+          name: cluster-tcp
+          protocol: TCP
+        - containerPort: 9094
+          name: cluster-udp
+          protocol: UDP
+        volumeMounts:
+        - name: alertmanager-config-processed
+          mountPath: /etc/alertmanager
+        - name: alertmanager-storage
+          mountPath: /alertmanager
+        - name: alertmanager-templates
+          mountPath: /etc/alertmanager-templates
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9093
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 9093
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 5
+      volumes:
+      - name: alertmanager-config-template
+        configMap:
+          name: alertmanager-config
+      - name: alertmanager-config-processed
+        emptyDir: {}
+      - name: alertmanager-storage
+        emptyDir: {}
+      - name: alertmanager-templates
+        configMap:
+          name: alertmanager-templates
+          optional: true

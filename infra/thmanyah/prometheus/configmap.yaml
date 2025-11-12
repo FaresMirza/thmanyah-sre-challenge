@@ -12,6 +12,14 @@ data:
         cluster: 'thmanyah-cluster'
         environment: 'production'
 
+    # AlertManager configuration
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+              - 'alertmanager.prometheus-ns.svc.cluster.local:9093'
+          timeout: 10s
+
     # Alert rules configuration
     rule_files:
       - '/etc/prometheus-rules/*.yml'

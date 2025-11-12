@@ -1,0 +1,62 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: alertmanager-network-policy
+  namespace: prometheus-ns
+spec:
+  podSelector:
+    matchLabels:
+      app: alertmanager
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow Prometheus to send alerts to AlertManager
+  - from:
+    - podSelector:
+        matchLabels:
+          app: prometheus
+    ports:
+    - protocol: TCP
+      port: 9093
+  
+  # Allow AlertManager cluster communication (for HA setup)
+  - from:
+    - podSelector:
+        matchLabels:
+          app: alertmanager
+    ports:
+    - protocol: TCP
+      port: 9094
+    - protocol: UDP
+      port: 9094
+  
+  egress:
+  # Allow DNS resolution
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+  
+  # Allow external webhook notifications (Slack, PagerDuty, etc.)
+  - to:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+  
+  # Allow AlertManager cluster communication
+  - to:
+    - podSelector:
+        matchLabels:
+          app: alertmanager
+    ports:
+    - protocol: TCP
+      port: 9094
+    - protocol: UDP
+      port: 9094

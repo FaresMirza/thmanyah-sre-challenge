@@ -34,6 +34,15 @@ spec:
         - protocol: UDP
           port: 53
     
+    # Allow sending alerts to AlertManager
+    - to:
+        - podSelector:
+            matchLabels:
+              app: alertmanager
+      ports:
+        - protocol: TCP
+          port: 9093
+    
     # Allow scraping kube-state-metrics in kube-system
     - to:
         - namespaceSelector:

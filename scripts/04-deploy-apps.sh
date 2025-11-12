@@ -46,6 +46,12 @@ if [ -f "$REPO_ROOT/infra/thmanyah/db/sealed-secret.yaml" ]; then
     kubectl apply -f "$REPO_ROOT/infra/thmanyah/minio/sealed-secret.yaml"
     kubectl apply -f "$REPO_ROOT/infra/thmanyah/grafana/sealed-secret.yaml"
     
+    # Apply AlertManager secret if it exists
+    if [ -f "$REPO_ROOT/infra/thmanyah/prometheus/alertmanager-sealed-secret.yaml" ]; then
+        kubectl apply -f "$REPO_ROOT/infra/thmanyah/prometheus/alertmanager-sealed-secret.yaml"
+        echo "✅ AlertManager secret applied"
+    fi
+    
     # Apply registry credentials if they exist
     if [ -f "$REPO_ROOT/infra/thmanyah/api/regcred-sealed.yaml" ]; then
         kubectl apply -f "$REPO_ROOT/infra/thmanyah/api/regcred-sealed.yaml"

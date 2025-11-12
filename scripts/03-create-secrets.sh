@@ -166,6 +166,24 @@ create_sealed_secret "grafana-secret" "grafana-ns" "$REPO_ROOT/infra/thmanyah/gr
 
 echo ""
 
+# AlertManager secret for Slack webhook
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🚨 AlertManager Secret (namespace: prometheus-ns)"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Prompt for Slack webhook URL
+read -p "Enter your Slack webhook URL (press Enter to skip): " SLACK_WEBHOOK_URL
+
+if [ -z "$SLACK_WEBHOOK_URL" ]; then
+    echo "⚠️  No Slack webhook URL provided. Using empty value."
+    SLACK_WEBHOOK_URL=""
+fi
+
+create_sealed_secret "alertmanager-secret" "prometheus-ns" "$REPO_ROOT/infra/thmanyah/prometheus/alertmanager-sealed-secret.yaml" \
+    "slack_api_url=$SLACK_WEBHOOK_URL"
+
+echo ""
+
 # Registry credentials
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🔐 Docker Registry Credentials"
@@ -248,6 +266,7 @@ echo "   ✅ $REPO_ROOT/infra/thmanyah/auth/sealed-secret.yaml"
 echo "   ✅ $REPO_ROOT/infra/thmanyah/api/sealed-secret.yaml"
 echo "   ✅ $REPO_ROOT/infra/thmanyah/image/sealed-secret.yaml"
 echo "   ✅ $REPO_ROOT/infra/thmanyah/grafana/sealed-secret.yaml"
+echo "   ✅ $REPO_ROOT/infra/thmanyah/prometheus/alertmanager-sealed-secret.yaml"
 echo "   ✅ $REPO_ROOT/infra/thmanyah/api/regcred-sealed.yaml"
 echo "   ✅ $REPO_ROOT/infra/thmanyah/auth/regcred-sealed.yaml"
 echo "   ✅ $REPO_ROOT/infra/thmanyah/image/regcred-sealed.yaml"
