@@ -18,11 +18,10 @@ data:
   
   overview-dashboard.json: |
     {
-      "dashboard": {
-        "title": "Thmanyah Services Overview",
-        "tags": ["overview"],
-        "timezone": "browser",
-        "panels": [
+      "title": "Thmanyah Services Overview",
+      "tags": ["overview"],
+      "timezone": "browser",
+      "panels": [
           {
             "title": "Services Health",
             "type": "stat",
@@ -68,12 +67,10 @@ data:
         "refresh": "30s",
         "schemaVersion": 16,
         "version": 0
-      }
     }
   
   api-service-dashboard.json: |
     {
-      "dashboard": {
         "title": "API Service Metrics",
         "tags": ["api"],
         "timezone": "browser",
@@ -125,12 +122,11 @@ data:
         "refresh": "30s",
         "schemaVersion": 16,
         "version": 0
-      }
+    }
     }
   
   auth-service-dashboard.json: |
     {
-      "dashboard": {
         "title": "Auth Service Metrics",
         "tags": ["auth"],
         "timezone": "browser",
@@ -182,12 +178,11 @@ data:
         "refresh": "30s",
         "schemaVersion": 16,
         "version": 0
-      }
+    }
     }
   
   image-service-dashboard.json: |
     {
-      "dashboard": {
         "title": "Image Service Metrics",
         "tags": ["image"],
         "timezone": "browser",
@@ -247,12 +242,10 @@ data:
         "refresh": "30s",
         "schemaVersion": 16,
         "version": 0
-      }
     }
   
   database-dashboard.json: |
     {
-      "dashboard": {
         "title": "PostgreSQL Metrics",
         "tags": ["database"],
         "timezone": "browser",
@@ -308,12 +301,10 @@ data:
         "refresh": "30s",
         "schemaVersion": 16,
         "version": 0
-      }
     }
   
   ingress-dashboard.json: |
     {
-      "dashboard": {
         "title": "Ingress NGINX Metrics",
         "tags": ["ingress"],
         "timezone": "browser",
@@ -370,5 +361,5 @@ data:
         "refresh": "30s",
         "schemaVersion": 16,
         "version": 0
-      }
+    }
     }
