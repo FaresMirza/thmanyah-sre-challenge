@@ -48,13 +48,23 @@ echo "⏳ Waiting for Metrics Server..."
 kubectl wait --for=condition=available --timeout=180s deployment/metrics-server -n kube-system
 
 echo ""
-echo "✅ ArgoCD, Sealed Secrets, and Metrics Server installed successfully!"
+echo "📈 Installing kube-state-metrics..."
+kubectl apply -f https://github.com/kubernetes/kube-state-metrics/releases/download/v2.10.1/kube-state-metrics-standard.yaml
+
+echo "⏳ Waiting for kube-state-metrics..."
+kubectl wait --for=condition=available --timeout=180s deployment/kube-state-metrics -n kube-system
+
+echo ""
+echo "✅ ArgoCD, Sealed Secrets, Metrics Server, and kube-state-metrics installed successfully!"
 echo ""
 echo "📊 ArgoCD Pods:"
 kubectl get pods -n argocd
 echo ""
 echo "🔐 Sealed Secrets Pod:"
 kubectl get pods -n kube-system -l app.kubernetes.io/name=sealed-secrets
+echo ""
+echo "📈 kube-state-metrics Pod:"
+kubectl get pods -n kube-system -l app.kubernetes.io/name=kube-state-metrics
 echo ""
 echo "🎉 Setup Complete!"
 

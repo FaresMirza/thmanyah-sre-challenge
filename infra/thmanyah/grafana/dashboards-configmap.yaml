@@ -374,3 +374,329 @@ data:
         "schemaVersion": 16,
         "version": 0
     }
+  
+  kubernetes-cluster-dashboard.json: |
+    {
+        "title": "Kubernetes Cluster Overview",
+        "tags": ["kubernetes", "cluster"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "title": "Cluster Node Status",
+            "type": "stat",
+            "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+            "targets": [
+              {
+                "expr": "count(kube_node_info)",
+                "legendFormat": "Total Nodes"
+              }
+            ]
+          },
+          {
+            "title": "Pod Status",
+            "type": "stat",
+            "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+            "targets": [
+              {
+                "expr": "sum(kube_pod_status_phase{phase=\"Running\"})",
+                "legendFormat": "Running"
+              },
+              {
+                "expr": "sum(kube_pod_status_phase{phase=\"Pending\"})",
+                "legendFormat": "Pending"
+              },
+              {
+                "expr": "sum(kube_pod_status_phase{phase=\"Failed\"})",
+                "legendFormat": "Failed"
+              }
+            ]
+          },
+          {
+            "title": "Deployment Status",
+            "type": "stat",
+            "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+            "targets": [
+              {
+                "expr": "sum(kube_deployment_status_replicas_available)",
+                "legendFormat": "Available Replicas"
+              }
+            ]
+          },
+          {
+            "title": "Namespace Count",
+            "type": "stat",
+            "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+            "targets": [
+              {
+                "expr": "count(kube_namespace_created)",
+                "legendFormat": "Namespaces"
+              }
+            ]
+          },
+          {
+            "title": "CPU Usage by Namespace",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6},
+            "targets": [
+              {
+                "expr": "sum(rate(container_cpu_usage_seconds_total{container!=\"\",container!=\"POD\"}[5m])) by (namespace)",
+                "legendFormat": "{{namespace}}"
+              }
+            ]
+          },
+          {
+            "title": "Memory Usage by Namespace",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6},
+            "targets": [
+              {
+                "expr": "sum(container_memory_working_set_bytes{container!=\"\",container!=\"POD\"}) by (namespace)",
+                "legendFormat": "{{namespace}}"
+              }
+            ]
+          },
+          {
+            "title": "Network I/O by Namespace",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14},
+            "targets": [
+              {
+                "expr": "sum(rate(container_network_receive_bytes_total[5m])) by (namespace)",
+                "legendFormat": "{{namespace}} - RX"
+              },
+              {
+                "expr": "sum(rate(container_network_transmit_bytes_total[5m])) by (namespace)",
+                "legendFormat": "{{namespace}} - TX"
+              }
+            ]
+          },
+          {
+            "title": "Pod Restarts",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 14},
+            "targets": [
+              {
+                "expr": "sum(rate(kube_pod_container_status_restarts_total[5m])) by (namespace, pod)",
+                "legendFormat": "{{namespace}}/{{pod}}"
+              }
+            ]
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 16,
+        "version": 0
+    }
+  
+  kubernetes-nodes-dashboard.json: |
+    {
+        "title": "Kubernetes Nodes",
+        "tags": ["kubernetes", "nodes"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "title": "Node CPU Usage",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+            "targets": [
+              {
+                "expr": "100 - (avg by (node) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+                "legendFormat": "{{node}}"
+              }
+            ],
+            "yaxes": [
+              {"format": "percent", "max": 100, "min": 0}
+            ]
+          },
+          {
+            "title": "Node Memory Usage",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+            "targets": [
+              {
+                "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100",
+                "legendFormat": "{{node}}"
+              }
+            ],
+            "yaxes": [
+              {"format": "percent", "max": 100, "min": 0}
+            ]
+          },
+          {
+            "title": "Node Disk Usage",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "targets": [
+              {
+                "expr": "100 - ((node_filesystem_avail_bytes{mountpoint=\"/\",fstype!=\"rootfs\"} / node_filesystem_size_bytes{mountpoint=\"/\",fstype!=\"rootfs\"}) * 100)",
+                "legendFormat": "{{node}}"
+              }
+            ],
+            "yaxes": [
+              {"format": "percent", "max": 100, "min": 0}
+            ]
+          },
+          {
+            "title": "Node Network Traffic",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "targets": [
+              {
+                "expr": "rate(node_network_receive_bytes_total{device!=\"lo\"}[5m])",
+                "legendFormat": "{{node}} - RX"
+              },
+              {
+                "expr": "rate(node_network_transmit_bytes_total{device!=\"lo\"}[5m])",
+                "legendFormat": "{{node}} - TX"
+              }
+            ]
+          },
+          {
+            "title": "Node Load Average",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+            "targets": [
+              {
+                "expr": "node_load1",
+                "legendFormat": "{{node}} - 1m"
+              },
+              {
+                "expr": "node_load5",
+                "legendFormat": "{{node}} - 5m"
+              },
+              {
+                "expr": "node_load15",
+                "legendFormat": "{{node}} - 15m"
+              }
+            ]
+          },
+          {
+            "title": "Node Conditions",
+            "type": "stat",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+            "targets": [
+              {
+                "expr": "kube_node_status_condition{condition=\"Ready\",status=\"true\"}",
+                "legendFormat": "{{node}} - Ready"
+              },
+              {
+                "expr": "kube_node_status_condition{condition=\"MemoryPressure\",status=\"true\"}",
+                "legendFormat": "{{node}} - MemoryPressure"
+              },
+              {
+                "expr": "kube_node_status_condition{condition=\"DiskPressure\",status=\"true\"}",
+                "legendFormat": "{{node}} - DiskPressure"
+              }
+            ]
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 16,
+        "version": 0
+    }
+  
+  kubernetes-pods-dashboard.json: |
+    {
+        "title": "Kubernetes Pods",
+        "tags": ["kubernetes", "pods"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "title": "Pod CPU Usage",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+            "targets": [
+              {
+                "expr": "sum(rate(container_cpu_usage_seconds_total{container!=\"\",container!=\"POD\"}[5m])) by (namespace, pod)",
+                "legendFormat": "{{namespace}}/{{pod}}"
+              }
+            ]
+          },
+          {
+            "title": "Pod Memory Usage",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+            "targets": [
+              {
+                "expr": "sum(container_memory_working_set_bytes{container!=\"\",container!=\"POD\"}) by (namespace, pod)",
+                "legendFormat": "{{namespace}}/{{pod}}"
+              }
+            ]
+          },
+          {
+            "title": "Container CPU Throttling",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "targets": [
+              {
+                "expr": "rate(container_cpu_cfs_throttled_seconds_total{container!=\"\"}[5m])",
+                "legendFormat": "{{namespace}}/{{pod}}/{{container}}"
+              }
+            ]
+          },
+          {
+            "title": "Container Memory vs Limits",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "targets": [
+              {
+                "expr": "(container_memory_working_set_bytes{container!=\"\"} / container_spec_memory_limit_bytes{container!=\"\"}) * 100",
+                "legendFormat": "{{namespace}}/{{pod}}/{{container}}"
+              }
+            ],
+            "yaxes": [
+              {"format": "percent", "max": 100, "min": 0}
+            ]
+          },
+          {
+            "title": "Pod Network I/O",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+            "targets": [
+              {
+                "expr": "rate(container_network_receive_bytes_total{pod!=\"\"}[5m])",
+                "legendFormat": "{{namespace}}/{{pod}} - RX"
+              },
+              {
+                "expr": "rate(container_network_transmit_bytes_total{pod!=\"\"}[5m])",
+                "legendFormat": "{{namespace}}/{{pod}} - TX"
+              }
+            ]
+          },
+          {
+            "title": "Container Restarts",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+            "targets": [
+              {
+                "expr": "kube_pod_container_status_restarts_total",
+                "legendFormat": "{{namespace}}/{{pod}}/{{container}}"
+              }
+            ]
+          },
+          {
+            "title": "Pod Status Phase",
+            "type": "stat",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+            "targets": [
+              {
+                "expr": "kube_pod_status_phase",
+                "legendFormat": "{{namespace}}/{{pod}} - {{phase}}"
+              }
+            ]
+          },
+          {
+            "title": "OOMKilled Containers",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+            "targets": [
+              {
+                "expr": "kube_pod_container_status_terminated_reason{reason=\"OOMKilled\"}",
+                "legendFormat": "{{namespace}}/{{pod}}/{{container}}"
+              }
+            ]
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 16,
+        "version": 0
+    }
