@@ -17,8 +17,15 @@ spec:
           port: 80
         - protocol: TCP
           port: 443
-    # Allow health checks and Prometheus metrics scraping
-    - ports:
+    # Allow Prometheus to scrape metrics
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: prometheus-ns
+          podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
         - protocol: TCP
           port: 10254
   egress:
