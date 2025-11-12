@@ -54,3 +54,14 @@ spec:
       ports:
         - protocol: TCP
           port: 3000
+    # Allow egress to Grafana
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: grafana-ns
+          podSelector:
+            matchLabels:
+              app: grafana
+      ports:
+        - protocol: TCP
+          port: 3000

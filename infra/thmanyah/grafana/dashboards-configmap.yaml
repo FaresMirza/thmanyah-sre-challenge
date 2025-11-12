@@ -1,0 +1,374 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: grafana-ns
+data:
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /etc/grafana/provisioning/dashboards
+  
+  overview-dashboard.json: |
+    {
+      "dashboard": {
+        "title": "Thmanyah Services Overview",
+        "tags": ["overview"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "title": "Services Health",
+            "type": "stat",
+            "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+            "targets": [
+              {
+                "expr": "up{job=~\"api-service|auth-service|image-service|postgres|ingress-nginx\"}",
+                "legendFormat": "{{job}}"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "mappings": [
+                  {"type": "value", "options": {"0": {"text": "Down", "color": "red"}}},
+                  {"type": "value", "options": {"1": {"text": "Up", "color": "green"}}}
+                ]
+              }
+            }
+          },
+          {
+            "title": "CPU Usage",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 9, "x": 6, "y": 0},
+            "targets": [
+              {
+                "expr": "rate(process_cpu_seconds_total[5m])",
+                "legendFormat": "{{job}}"
+              }
+            ]
+          },
+          {
+            "title": "Memory Usage",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 9, "x": 15, "y": 0},
+            "targets": [
+              {
+                "expr": "process_resident_memory_bytes",
+                "legendFormat": "{{job}}"
+              }
+            ]
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 16,
+        "version": 0
+      }
+    }
+  
+  api-service-dashboard.json: |
+    {
+      "dashboard": {
+        "title": "API Service Metrics",
+        "tags": ["api"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "title": "Request Rate",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{job=\"api-service\"}[5m])",
+                "legendFormat": "{{method}} {{path}}"
+              }
+            ]
+          },
+          {
+            "title": "Response Time (p95)",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"api-service\"}[5m]))",
+                "legendFormat": "{{method}} {{path}}"
+              }
+            ]
+          },
+          {
+            "title": "Error Rate",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{job=\"api-service\",status=~\"5..\"}[5m])",
+                "legendFormat": "{{method}} {{path}}"
+              }
+            ]
+          },
+          {
+            "title": "Active Connections",
+            "type": "stat",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "targets": [
+              {
+                "expr": "nodejs_active_handles_total{job=\"api-service\"}"
+              }
+            ]
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 16,
+        "version": 0
+      }
+    }
+  
+  auth-service-dashboard.json: |
+    {
+      "dashboard": {
+        "title": "Auth Service Metrics",
+        "tags": ["auth"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "title": "Authentication Requests",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{job=\"auth-service\"}[5m])",
+                "legendFormat": "{{method}} {{path}}"
+              }
+            ]
+          },
+          {
+            "title": "Failed Authentications",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{job=\"auth-service\",status=\"401\"}[5m])",
+                "legendFormat": "Failed logins"
+              }
+            ]
+          },
+          {
+            "title": "JWT Token Generation Rate",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "targets": [
+              {
+                "expr": "rate(jwt_tokens_generated_total{job=\"auth-service\"}[5m])"
+              }
+            ]
+          },
+          {
+            "title": "Database Query Time",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "targets": [
+              {
+                "expr": "rate(db_query_duration_seconds_sum{job=\"auth-service\"}[5m]) / rate(db_query_duration_seconds_count{job=\"auth-service\"}[5m])",
+                "legendFormat": "Avg query time"
+              }
+            ]
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 16,
+        "version": 0
+      }
+    }
+  
+  image-service-dashboard.json: |
+    {
+      "dashboard": {
+        "title": "Image Service Metrics",
+        "tags": ["image"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "title": "Image Upload Rate",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{job=\"image-service\",method=\"POST\"}[5m])",
+                "legendFormat": "Uploads"
+              }
+            ]
+          },
+          {
+            "title": "Image Download Rate",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{job=\"image-service\",method=\"GET\"}[5m])",
+                "legendFormat": "Downloads"
+              }
+            ]
+          },
+          {
+            "title": "MinIO Connection Status",
+            "type": "stat",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "targets": [
+              {
+                "expr": "minio_connection_status{job=\"image-service\"}"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "mappings": [
+                  {"type": "value", "options": {"0": {"text": "Disconnected", "color": "red"}}},
+                  {"type": "value", "options": {"1": {"text": "Connected", "color": "green"}}}
+                ]
+              }
+            }
+          },
+          {
+            "title": "Processing Time",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"image-service\"}[5m]))",
+                "legendFormat": "p95"
+              }
+            ]
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 16,
+        "version": 0
+      }
+    }
+  
+  database-dashboard.json: |
+    {
+      "dashboard": {
+        "title": "PostgreSQL Metrics",
+        "tags": ["database"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "title": "Active Connections",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+            "targets": [
+              {
+                "expr": "pg_stat_database_numbackends{job=\"postgres\"}",
+                "legendFormat": "{{datname}}"
+              }
+            ]
+          },
+          {
+            "title": "Transaction Rate",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+            "targets": [
+              {
+                "expr": "rate(pg_stat_database_xact_commit{job=\"postgres\"}[5m])",
+                "legendFormat": "Commits"
+              },
+              {
+                "expr": "rate(pg_stat_database_xact_rollback{job=\"postgres\"}[5m])",
+                "legendFormat": "Rollbacks"
+              }
+            ]
+          },
+          {
+            "title": "Database Size",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "targets": [
+              {
+                "expr": "pg_database_size_bytes{job=\"postgres\"}",
+                "legendFormat": "{{datname}}"
+              }
+            ]
+          },
+          {
+            "title": "Cache Hit Ratio",
+            "type": "gauge",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "targets": [
+              {
+                "expr": "rate(pg_stat_database_blks_hit{job=\"postgres\"}[5m]) / (rate(pg_stat_database_blks_hit{job=\"postgres\"}[5m]) + rate(pg_stat_database_blks_read{job=\"postgres\"}[5m]))"
+              }
+            ]
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 16,
+        "version": 0
+      }
+    }
+  
+  ingress-dashboard.json: |
+    {
+      "dashboard": {
+        "title": "Ingress NGINX Metrics",
+        "tags": ["ingress"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "title": "Request Rate by Path",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+            "targets": [
+              {
+                "expr": "rate(nginx_ingress_controller_requests{job=\"ingress-nginx\"}[5m])",
+                "legendFormat": "{{path}}"
+              }
+            ]
+          },
+          {
+            "title": "Response Codes",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+            "targets": [
+              {
+                "expr": "rate(nginx_ingress_controller_requests{job=\"ingress-nginx\"}[5m])",
+                "legendFormat": "{{status}}"
+              }
+            ]
+          },
+          {
+            "title": "Ingress Throughput",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "targets": [
+              {
+                "expr": "rate(nginx_ingress_controller_request_size_sum{job=\"ingress-nginx\"}[5m])",
+                "legendFormat": "Request"
+              },
+              {
+                "expr": "rate(nginx_ingress_controller_response_size_sum{job=\"ingress-nginx\"}[5m])",
+                "legendFormat": "Response"
+              }
+            ]
+          },
+          {
+            "title": "Backend Response Time",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, rate(nginx_ingress_controller_response_duration_seconds_bucket{job=\"ingress-nginx\"}[5m]))",
+                "legendFormat": "p95"
+              }
+            ]
+          }
+        ],
+        "refresh": "30s",
+        "schemaVersion": 16,
+        "version": 0
+      }
+    }
