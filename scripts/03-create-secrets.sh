@@ -230,3 +230,40 @@ echo "   ✅ $REPO_ROOT/infra/thmanyah/image/regcred-sealed.yaml"
 echo "   ✅ $REPO_ROOT/infra/thmanyah/api/tls-secret-sealed.yaml"
 echo ""
 echo "💡 These secrets are encrypted and safe to commit to Git!"
+echo ""
+
+# Add hosts entry
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🌐 Configuring /etc/hosts entry"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+HOSTS_ENTRY="127.0.0.1       thmanyah.local"
+
+# Detect OS and set hosts file path
+if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "win32" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
+    # Windows
+    HOSTS_FILE="C:\\Windows\\System32\\drivers\\etc\\hosts"
+    echo "Detected Windows system"
+else
+    # Linux/macOS
+    HOSTS_FILE="/etc/hosts"
+    echo "Detected Unix-like system"
+fi
+
+# Check if entry already exists
+if grep -q "thmanyah.local" "$HOSTS_FILE" 2>/dev/null; then
+    echo "✅ Entry already exists in $HOSTS_FILE"
+else
+    echo "Adding entry to $HOSTS_FILE (requires sudo)..."
+    
+    if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "win32" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
+        # Windows - requires running as Administrator
+        echo "$HOSTS_ENTRY" >> "$HOSTS_FILE" 2>/dev/null || echo "⚠️  Please run as Administrator or manually add: $HOSTS_ENTRY to $HOSTS_FILE"
+    else
+        # Linux/macOS - use sudo
+        echo "$HOSTS_ENTRY" | sudo tee -a "$HOSTS_FILE" > /dev/null && echo "✅ Added entry to $HOSTS_FILE" || echo "⚠️  Failed to add entry. Please manually add: $HOSTS_ENTRY to $HOSTS_FILE"
+    fi
+fi
+
+echo ""
+echo "🎉 Setup complete! You can now access the application at https://thmanyah.local"
