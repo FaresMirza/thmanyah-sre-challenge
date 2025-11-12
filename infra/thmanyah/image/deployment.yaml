@@ -16,7 +16,7 @@ spec:
         app: image
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/port: "9104"
+        prometheus.io/port: "5000"
         prometheus.io/path: "/metrics"
     spec:
       containers:
@@ -47,20 +47,6 @@ spec:
               port: 5000
             initialDelaySeconds: 10
             periodSeconds: 15
-        
-        # Blackbox exporter for HTTP metrics
-        - name: blackbox-exporter
-          image: prom/blackbox-exporter:latest
-          ports:
-            - containerPort: 9104
-              name: metrics
-          resources:
-            requests:
-              cpu: "50m"
-              memory: "64Mi"
-            limits:
-              cpu: "100m"
-              memory: "128Mi"
       imagePullSecrets:
         - name: ghcr-regcred
       restartPolicy: Always

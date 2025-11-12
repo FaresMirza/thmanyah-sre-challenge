@@ -21,19 +21,19 @@ data:
       # Scrape API Service
       - job_name: 'api-service'
         static_configs:
-          - targets: ['api-service.api-ns.svc.cluster.local:9102']
+          - targets: ['api-service.api-ns.svc.cluster.local:3000']
         metrics_path: '/metrics'
 
       # Scrape Auth Service
       - job_name: 'auth-service'
         static_configs:
-          - targets: ['auth-service.auth-ns.svc.cluster.local:9103']
+          - targets: ['auth-service.auth-ns.svc.cluster.local:4000']
         metrics_path: '/metrics'
 
       # Scrape Image Service
       - job_name: 'image-service'
         static_configs:
-          - targets: ['image-service.image-ns.svc.cluster.local:9104']
+          - targets: ['image-service.image-ns.svc.cluster.local:5000']
         metrics_path: '/metrics'
 
       # Scrape PostgreSQL Database (if postgres_exporter is deployed)

@@ -1,5 +1,6 @@
 const express = require("express");
 const morgan = require("morgan");
+const client = require("prom-client");
 const routes = require("./routes");
 const health = require("./health");
 const registerRoute = require("./routes/register");
@@ -12,6 +13,24 @@ const imagesRoute = require("./routes/images");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Prometheus metrics
+const register = new client.Registry();
+client.collectDefaultMetrics({ register });
+
+const httpRequestDuration = new client.Histogram({
+  name: 'http_request_duration_seconds',
+  help: 'Duration of HTTP requests in seconds',
+  labelNames: ['method', 'route', 'status_code'],
+  registers: [register]
+});
+
+const httpRequestsTotal = new client.Counter({
+  name: 'http_requests_total',
+  help: 'Total number of HTTP requests',
+  labelNames: ['method', 'route', 'status_code'],
+  registers: [register]
+});
+
 // Custom logging format with timestamp
 const logFormat = ':date[iso] [API-SERVICE] :method :url :status :response-time ms - :res[content-length] bytes';
 
@@ -21,6 +40,19 @@ app.use(morgan(logFormat, {
 }));
 
 app.use(express.json());
+
+// Metrics middleware
+app.use((req, res, next) => {
+  if (req.path === '/metrics') return next();
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = (Date.now() - start) / 1000;
+    const route = req.route?.path || req.path;
+    httpRequestDuration.labels(req.method, route, res.statusCode).observe(duration);
+    httpRequestsTotal.labels(req.method, route, res.statusCode).inc();
+  });
+  next();
+});
 
 // Log startup configuration
 console.log(`[${new Date().toISOString()}] [API-SERVICE] INFO: Starting API Service`);
@@ -33,6 +65,12 @@ console.log(`[${new Date().toISOString()}] [API-SERVICE] INFO:   Database: ${pro
 // Health endpoints for Kubernetes probes
 app.get("/healthz", health.readiness);
 app.get("/livez", health.liveness);
+
+// Metrics endpoint for Prometheus
+app.get("/metrics", async (req, res) => {
+  res.set("Content-Type", register.contentType);
+  res.end(await register.metrics());
+});
 
 // Auth endpoints
 app.use("/register", registerRoute);

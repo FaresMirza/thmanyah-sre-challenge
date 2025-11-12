@@ -10,11 +10,36 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	_ "github.com/lib/pq"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var db *sql.DB
 var jwtSecret = []byte(getEnv("JWT_SECRET", ""))
+
+// Prometheus metrics
+var (
+	httpRequestsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_requests_total",
+			Help: "Total number of HTTP requests",
+		},
+		[]string{"method", "endpoint", "status"},
+	)
+	httpRequestDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name: "http_request_duration_seconds",
+			Help: "Duration of HTTP requests in seconds",
+		},
+		[]string{"method", "endpoint"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(httpRequestsTotal)
+	prometheus.MustRegister(httpRequestDuration)
+}
 
 func main() {
 	// Configure logger with timestamp
@@ -40,10 +65,11 @@ func main() {
 	http.HandleFunc("/verify", loggingMiddleware(handleVerify))
 	http.HandleFunc("/healthz", handleHealth)
 	http.HandleFunc("/livez", handleHealth)
+	http.Handle("/metrics", promhttp.Handler())
 
 	port := getEnv("PORT", "4000")
 	log.Printf("INFO: Starting Auth Service on port %s", port)
-	log.Printf("INFO: Endpoints registered: /login, /verify, /healthz, /livez")
+	log.Printf("INFO: Endpoints registered: /login, /verify, /healthz, /livez, /metrics")
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatalf("FATAL: Server failed to start: %v", err)
 	}
@@ -154,10 +180,23 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 func loggingMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		next(w, r)
+		rw := &responseWriter{ResponseWriter: w, statusCode: http.StatusOK}
+		next(rw, r)
 		duration := time.Since(start)
+		httpRequestDuration.WithLabelValues(r.Method, r.URL.Path).Observe(duration.Seconds())
+		httpRequestsTotal.WithLabelValues(r.Method, r.URL.Path, http.StatusText(rw.statusCode)).Inc()
 		log.Printf("INFO: %s %s completed in %v from %s", r.Method, r.URL.Path, duration, r.RemoteAddr)
 	}
+}
+
+type responseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (rw *responseWriter) WriteHeader(code int) {
+	rw.statusCode = code
+	rw.ResponseWriter.WriteHeader(code)
 }
 
 func getEnv(key, fallback string) string {

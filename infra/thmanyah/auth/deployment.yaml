@@ -16,7 +16,7 @@ spec:
         app: auth
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/port: "9103"
+        prometheus.io/port: "4000"
         prometheus.io/path: "/metrics"
     spec:
       containers:
@@ -47,22 +47,6 @@ spec:
               port: 4000
             initialDelaySeconds: 10
             periodSeconds: 15
-        
-        # Generic HTTP exporter for Go service
-        - name: http-exporter
-          image: prom/blackbox-exporter:latest
-          args:
-            - --config.file=/config/blackbox.yml
-          ports:
-            - containerPort: 9103
-              name: metrics
-          resources:
-            requests:
-              cpu: "50m"
-              memory: "64Mi"
-            limits:
-              cpu: "100m"
-              memory: "128Mi"
       imagePullSecrets:
         - name: ghcr-regcred
       restartPolicy: Always

@@ -1,14 +1,15 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
 import boto3, os, uuid, requests
 import logging
 import time
 from datetime import datetime
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 
 # Custom filter to exclude health check endpoints from Uvicorn access logs
 class HealthCheckFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
-        return record.getMessage().find("/healthz") == -1 and record.getMessage().find("/livez") == -1
+        return record.getMessage().find("/healthz") == -1 and record.getMessage().find("/livez") == -1 and record.getMessage().find("/metrics") == -1
 
 # Configure logging
 logging.basicConfig(
@@ -22,6 +23,19 @@ logger = logging.getLogger(__name__)
 logging.getLogger("uvicorn.access").addFilter(HealthCheckFilter())
 
 app = FastAPI()
+
+# Prometheus metrics
+http_requests_total = Counter(
+    'http_requests_total',
+    'Total HTTP requests',
+    ['method', 'endpoint', 'status']
+)
+
+http_request_duration_seconds = Histogram(
+    'http_request_duration_seconds',
+    'HTTP request duration in seconds',
+    ['method', 'endpoint']
+)
 
 # Environment variables
 AUTH_URL = os.getenv("AUTH_SERVICE_URL")
@@ -65,16 +79,26 @@ async def log_requests(request: Request, call_next):
     start_time = time.time()
     
     # Skip logging for health check endpoints to reduce noise
-    if request.url.path not in ["/healthz", "/livez"]:
+    if request.url.path not in ["/healthz", "/livez", "/metrics"]:
         logger.info(f"Incoming request: {request.method} {request.url.path} from {request.client.host}")
     
     response = await call_next(request)
     
     process_time = time.time() - start_time
-    if request.url.path not in ["/healthz", "/livez"]:
+    
+    # Record metrics
+    if request.url.path != "/metrics":
+        http_request_duration_seconds.labels(request.method, request.url.path).observe(process_time)
+        http_requests_total.labels(request.method, request.url.path, response.status_code).inc()
+    
+    if request.url.path not in ["/healthz", "/livez", "/metrics"]:
         logger.info(f"Completed: {request.method} {request.url.path} - Status: {response.status_code} - Duration: {process_time:.3f}s")
     
     return response
+
+@app.get("/metrics")
+def metrics():
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 @app.get("/healthz")
 def health():
