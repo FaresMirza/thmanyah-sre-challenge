@@ -101,20 +101,20 @@ spec:
           port: 10254
     
     # Allow access to Kubernetes API server for service discovery
+    # The API server is accessible via the kubernetes service in the default namespace
     - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: default
-          podSelector:
-            matchLabels:
-              component: apiserver
+        - namespaceSelector: {}
       ports:
         - protocol: TCP
           port: 443
+        - protocol: TCP
+          port: 6443
     
     # Allow access to kubelets on all nodes for metrics (cAdvisor, kubelet)
+    # Nodes are not in any namespace, so we allow all
     - to:
         - namespaceSelector: {}
+        - podSelector: {}
       ports:
         - protocol: TCP
           port: 10250
