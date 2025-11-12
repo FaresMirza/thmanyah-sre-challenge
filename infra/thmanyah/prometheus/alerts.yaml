@@ -284,6 +284,39 @@ data:
               summary: "Image service is scaling"
               description: "Image service HPA scaling event detected"
 
+          - alert: ImageServiceScalingDown
+            expr: |
+              delta(kube_horizontalpodautoscaler_status_current_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}[2m]) < 0
+            for: 30s
+            labels:
+              severity: info
+              component: image-service
+            annotations:
+              summary: "Image service is scaling down"
+              description: "Image service scaled down to {{ $value }} replicas"
+
+          - alert: HPAScaledUp
+            expr: |
+              delta(kube_horizontalpodautoscaler_status_current_replicas{namespace=~"api-ns|auth-ns|image-ns"}[2m]) > 0
+            for: 30s
+            labels:
+              severity: info
+              component: autoscaling
+            annotations:
+              summary: "HPA {{ $labels.horizontalpodautoscaler }} scaled up"
+              description: "HPA {{ $labels.horizontalpodautoscaler }} scaled to {{ $value }} replicas"
+
+          - alert: HPAScaledDown
+            expr: |
+              delta(kube_horizontalpodautoscaler_status_current_replicas{namespace=~"api-ns|auth-ns|image-ns"}[2m]) < 0
+            for: 30s
+            labels:
+              severity: info
+              component: autoscaling
+            annotations:
+              summary: "HPA {{ $labels.horizontalpodautoscaler }} scaled down"
+              description: "HPA {{ $labels.horizontalpodautoscaler }} scaled to {{ $value }} replicas"
+
       # ===== Prometheus Self-Monitoring =====
       - name: prometheus_self
         interval: 5s
