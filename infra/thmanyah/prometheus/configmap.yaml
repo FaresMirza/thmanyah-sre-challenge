@@ -42,12 +42,6 @@ data:
           - targets: ['db.data-ns.svc.cluster.local:9187']
         metrics_path: '/metrics'
 
-      # Scrape MinIO
-      - job_name: 'minio'
-        static_configs:
-          - targets: ['minio.minio-ns.svc.cluster.local:9000']
-        metrics_path: '/minio/v2/metrics/cluster'
-
       # Scrape Ingress Controller
       - job_name: 'ingress-nginx'
         static_configs:
