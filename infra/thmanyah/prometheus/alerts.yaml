@@ -168,30 +168,18 @@ data:
       - name: resource_utilization
         interval: 30s
         rules:
-          - alert: HighCPUUsage
+          # Alert when HPA is scaling due to high resource usage
+          - alert: ServiceHighResourceUsage
             expr: |
-              sum(rate(container_cpu_usage_seconds_total{namespace=~"api-ns|auth-ns|image-ns|data-ns"}[5m])) by (namespace, pod)
-              / sum(container_spec_cpu_quota{namespace=~"api-ns|auth-ns|image-ns|data-ns"} 
-              / container_spec_cpu_period{namespace=~"api-ns|auth-ns|image-ns|data-ns"}) by (namespace, pod) > 0.8
-            for: 5s
+              kube_horizontalpodautoscaler_status_current_replicas{namespace=~"api-ns|auth-ns|image-ns"}
+              > kube_horizontalpodautoscaler_spec_min_replicas{namespace=~"api-ns|auth-ns|image-ns"}
+            for: 2m
             labels:
               severity: warning
               component: kubernetes
             annotations:
-              summary: "High CPU usage in {{ $labels.namespace }}"
-              description: "Pod {{ $labels.pod }} CPU usage is {{ $value | humanizePercentage }} (threshold: 80%)"
-
-          - alert: HighMemoryUsage
-            expr: |
-              sum(container_memory_working_set_bytes{namespace=~"api-ns|auth-ns|image-ns|data-ns"}) by (namespace, pod)
-              / sum(container_spec_memory_limit_bytes{namespace=~"api-ns|auth-ns|image-ns|data-ns"}) by (namespace, pod) > 0.85
-            for: 5s
-            labels:
-              severity: warning
-              component: kubernetes
-            annotations:
-              summary: "High memory usage in {{ $labels.namespace }}"
-              description: "Pod {{ $labels.pod }} memory usage is {{ $value | humanizePercentage }} (threshold: 85%)"
+              summary: "Service in {{ $labels.namespace }} is under high load"
+              description: "HPA {{ $labels.horizontalpodautoscaler }} has scaled to {{ $value }} replicas due to high resource usage"
 
           - alert: PodCrashLooping
             expr: |
@@ -208,17 +196,16 @@ data:
       - name: storage
         interval: 30s
         rules:
-          - alert: PersistentVolumeHighUsage
+          - alert: PersistentVolumeClaimPending
             expr: |
-              (kubelet_volume_stats_used_bytes{namespace=~"data-ns|prometheus-ns"}
-              / kubelet_volume_stats_capacity_bytes{namespace=~"data-ns|prometheus-ns"}) > 0.8
-            for: 5s
+              kube_persistentvolumeclaim_status_phase{phase="Pending",namespace=~"data-ns|prometheus-ns"} == 1
+            for: 5m
             labels:
               severity: warning
               component: storage
             annotations:
-              summary: "PVC {{ $labels.persistentvolumeclaim }} usage is high"
-              description: "PVC usage in {{ $labels.namespace }} is {{ $value | humanizePercentage }} (threshold: 80%)"
+              summary: "PVC {{ $labels.persistentvolumeclaim }} is pending"
+              description: "PVC {{ $labels.persistentvolumeclaim }} in {{ $labels.namespace }} has been pending for 5 minutes"
 
       # ===== Network Alerts =====
       - name: networking
@@ -236,16 +223,16 @@ data:
               summary: "Ingress {{ $labels.ingress }} has high error rate"
               description: "Ingress error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
 
-          - alert: HighNetworkErrors
+          - alert: PodNotReady
             expr: |
-              rate(container_network_transmit_errors_total{namespace=~"api-ns|auth-ns|image-ns"}[5m]) > 10
-            for: 5s
+              kube_pod_status_phase{namespace=~"api-ns|auth-ns|image-ns|data-ns",phase!="Running"} == 1
+            for: 5m
             labels:
               severity: warning
               component: networking
             annotations:
-              summary: "High network errors in {{ $labels.namespace }}"
-              description: "Pod {{ $labels.pod }} is experiencing {{ $value }} network errors/second"
+              summary: "Pod {{ $labels.pod }} is not ready"
+              description: "Pod {{ $labels.pod }} in {{ $labels.namespace }} has been in {{ $labels.phase }} state for 5 minutes"
 
       # ===== HPA Alerts =====
       - name: autoscaling
@@ -273,6 +260,30 @@ data:
             annotations:
               summary: "HPA {{ $labels.horizontalpodautoscaler }} scaling is disabled"
               description: "HPA scaling is disabled in {{ $labels.namespace }}"
+
+          - alert: ImageServiceHighLoad
+            expr: |
+              (kube_horizontalpodautoscaler_status_current_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}
+              / kube_horizontalpodautoscaler_spec_min_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}) > 1
+            for: 1m
+            labels:
+              severity: warning
+              component: image-service
+            annotations:
+              summary: "Image service is under high load"
+              description: "Image service HPA has scaled to {{ $value }} replicas due to high load (CPU or memory threshold exceeded)"
+
+          - alert: ImageServiceScalingUp
+            expr: |
+              kube_horizontalpodautoscaler_status_desired_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}
+              > kube_horizontalpodautoscaler_status_current_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}
+            for: 30s
+            labels:
+              severity: info
+              component: image-service
+            annotations:
+              summary: "Image service is scaling up"
+              description: "Image service HPA is scaling up from {{ $labels.current_replicas }} to handle increased load"
 
       # ===== Prometheus Self-Monitoring =====
       - name: prometheus_self
