@@ -225,7 +225,7 @@ data:
 
           - alert: PodNotReady
             expr: |
-              kube_pod_status_phase{namespace=~"api-ns|auth-ns|image-ns|data-ns",phase!="Running"} == 1
+              kube_pod_status_phase{namespace=~"api-ns|auth-ns|image-ns|data-ns",phase!~"Running|Succeeded"} == 1
             for: 30s
             labels:
               severity: warning
@@ -293,7 +293,7 @@ data:
               component: image-service
             annotations:
               summary: "Image service is scaling down"
-              description: "Image service scaled down to {{ $value }} replicas"
+              description: "Image service HPA scaling down event detected"
 
       # ===== Prometheus Self-Monitoring =====
       - name: prometheus_self

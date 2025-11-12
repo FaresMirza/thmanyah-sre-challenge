@@ -51,7 +51,7 @@ def http_stress():
         except (URLError, Exception) as e:
             errors += 1
         
-        # Balanced delay for ~65-75% CPU target - ~18 requests/sec per process
+        # Balanced delay for ~65-75% CPU target - ~20 requests/sec per process
         time.sleep(0.055)
     
     print(f"Process completed: {count} requests, {errors} errors")
@@ -59,7 +59,7 @@ def http_stress():
 print("Running HTTP stress test...")
 print("  Target: http://localhost:5000/healthz")
 print("  Processes: 1 (balanced load)")
-print("  Rate: ~18 requests/sec per pod")
+print("  Rate: ~20 requests/sec per pod")
 print("  Duration: 3 minutes")
 print()
 
