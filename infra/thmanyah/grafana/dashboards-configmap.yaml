@@ -82,39 +82,108 @@ data:
             "targets": [
               {
                 "expr": "rate(http_requests_total{job=\"api-service\"}[5m])",
-                "legendFormat": "{{method}} {{path}}"
+                "legendFormat": "{{method}} {{route}}"
               }
             ]
           },
           {
-            "title": "Response Time (p95)",
+            "title": "Response Time (p95 & p50)",
             "type": "graph",
             "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
             "targets": [
               {
                 "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"api-service\"}[5m]))",
-                "legendFormat": "{{method}} {{path}}"
+                "legendFormat": "{{method}} {{route}} - p95"
+              },
+              {
+                "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job=\"api-service\"}[5m]))",
+                "legendFormat": "{{method}} {{route}} - p50"
               }
             ]
           },
           {
-            "title": "Error Rate",
+            "title": "Error Rate (4xx & 5xx)",
             "type": "graph",
             "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
             "targets": [
               {
-                "expr": "rate(http_requests_total{job=\"api-service\",status=~\"5..\"}[5m])",
-                "legendFormat": "{{method}} {{path}}"
+                "expr": "rate(http_requests_total{job=\"api-service\",status_code=~\"4..\"}[5m])",
+                "legendFormat": "4xx - {{method}} {{route}}"
+              },
+              {
+                "expr": "rate(http_requests_total{job=\"api-service\",status_code=~\"5..\"}[5m])",
+                "legendFormat": "5xx - {{method}} {{route}}"
               }
             ]
           },
           {
-            "title": "Active Connections",
-            "type": "stat",
+            "title": "Active Handles & Requests",
+            "type": "graph",
             "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
             "targets": [
               {
-                "expr": "nodejs_active_handles_total{job=\"api-service\"}"
+                "expr": "nodejs_active_handles_total{job=\"api-service\"}",
+                "legendFormat": "Active Handles"
+              },
+              {
+                "expr": "nodejs_active_requests_total{job=\"api-service\"}",
+                "legendFormat": "Active Requests"
+              }
+            ]
+          },
+          {
+            "title": "Service Status",
+            "type": "stat",
+            "gridPos": {"h": 6, "w": 6, "x": 0, "y": 16},
+            "targets": [
+              {
+                "expr": "up{job=\"api-service\"}",
+                "legendFormat": "Status"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "mappings": [
+                  {"type": "value", "options": {"0": {"text": "Down", "color": "red"}}},
+                  {"type": "value", "options": {"1": {"text": "Up", "color": "green"}}}
+                ]
+              }
+            }
+          },
+          {
+            "title": "Total Requests/sec",
+            "type": "stat",
+            "gridPos": {"h": 6, "w": 6, "x": 6, "y": 16},
+            "targets": [
+              {
+                "expr": "sum(rate(http_requests_total{job=\"api-service\"}[5m]))",
+                "legendFormat": "Req/sec"
+              }
+            ]
+          },
+          {
+            "title": "Memory Usage",
+            "type": "graph",
+            "gridPos": {"h": 6, "w": 6, "x": 12, "y": 16},
+            "targets": [
+              {
+                "expr": "nodejs_heap_size_used_bytes{job=\"api-service\"}",
+                "legendFormat": "Heap Used"
+              },
+              {
+                "expr": "nodejs_heap_size_total_bytes{job=\"api-service\"}",
+                "legendFormat": "Heap Total"
+              }
+            ]
+          },
+          {
+            "title": "Event Loop Lag",
+            "type": "graph",
+            "gridPos": {"h": 6, "w": 6, "x": 18, "y": 16},
+            "targets": [
+              {
+                "expr": "nodejs_eventloop_lag_seconds{job=\"api-service\"}",
+                "legendFormat": "Event Loop Lag"
               }
             ]
           }
@@ -201,8 +270,8 @@ data:
             "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
             "targets": [
               {
-                "expr": "rate(http_requests_total{job=\"image-service\",method=\"POST\"}[5m])",
-                "legendFormat": "Uploads"
+                "expr": "rate(http_requests_total{job=\"image-service\",method=\"POST\",endpoint=\"/upload\"}[5m])",
+                "legendFormat": "Uploads/sec"
               }
             ]
           },
@@ -212,37 +281,75 @@ data:
             "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
             "targets": [
               {
-                "expr": "rate(http_requests_total{job=\"image-service\",method=\"GET\"}[5m])",
-                "legendFormat": "Downloads"
+                "expr": "rate(http_requests_total{job=\"image-service\",method=\"GET\",endpoint=~\"/images/.*\"}[5m])",
+                "legendFormat": "Downloads/sec"
               }
             ]
           },
           {
-            "title": "MinIO Connection Status",
+            "title": "Service Status",
             "type": "stat",
-            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+            "gridPos": {"h": 6, "w": 6, "x": 0, "y": 8},
             "targets": [
               {
-                "expr": "minio_connection_status{job=\"image-service\"}"
+                "expr": "up{job=\"image-service\"}",
+                "legendFormat": "Status"
               }
             ],
             "fieldConfig": {
               "defaults": {
                 "mappings": [
-                  {"type": "value", "options": {"0": {"text": "Disconnected", "color": "red"}}},
-                  {"type": "value", "options": {"1": {"text": "Connected", "color": "green"}}}
+                  {"type": "value", "options": {"0": {"text": "Down", "color": "red"}}},
+                  {"type": "value", "options": {"1": {"text": "Up", "color": "green"}}}
                 ]
               }
             }
           },
           {
-            "title": "Processing Time",
+            "title": "Total Requests",
+            "type": "stat",
+            "gridPos": {"h": 6, "w": 6, "x": 6, "y": 8},
+            "targets": [
+              {
+                "expr": "sum(rate(http_requests_total{job=\"image-service\"}[5m]))",
+                "legendFormat": "Requests/sec"
+              }
+            ]
+          },
+          {
+            "title": "Request Duration (p95)",
             "type": "graph",
             "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
             "targets": [
               {
                 "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"image-service\"}[5m]))",
-                "legendFormat": "p95"
+                "legendFormat": "{{endpoint}} p95"
+              },
+              {
+                "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job=\"image-service\"}[5m]))",
+                "legendFormat": "{{endpoint}} p50"
+              }
+            ]
+          },
+          {
+            "title": "Error Rate",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{job=\"image-service\",status=~\"4..|5..\"}[5m])",
+                "legendFormat": "{{status}} - {{endpoint}}"
+              }
+            ]
+          },
+          {
+            "title": "Request Status Codes",
+            "type": "graph",
+            "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+            "targets": [
+              {
+                "expr": "rate(http_requests_total{job=\"image-service\"}[5m])",
+                "legendFormat": "{{status}} - {{method}} {{endpoint}}"
               }
             ]
           }
