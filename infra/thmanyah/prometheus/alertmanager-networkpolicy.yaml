@@ -34,17 +34,16 @@ spec:
   egress:
   # Allow DNS resolution
   - to:
-    - namespaceSelector:
-        matchLabels:
-          name: kube-system
+    - namespaceSelector: {}
     ports:
     - protocol: UDP
       port: 53
+    - protocol: TCP
+      port: 53
   
   # Allow external webhook notifications (Slack, PagerDuty, etc.)
-  - to:
-    - podSelector: {}
-    ports:
+  # This allows all external HTTPS/HTTP traffic
+  - ports:
     - protocol: TCP
       port: 443
     - protocol: TCP
