@@ -8,11 +8,11 @@ data:
     groups:
       # ===== Service Availability Alerts =====
       - name: service_availability
-        interval: 5s
+        interval: 10s
         rules:
           - alert: ServiceDown
             expr: up{job=~"api-service|auth-service|image-service"} == 0
-            for: 5s
+            for: 0s
             labels:
               severity: critical
               component: "{{ $labels.job }}"
@@ -22,7 +22,7 @@ data:
 
           - alert: HighPodRestartRate
             expr: rate(kube_pod_container_status_restarts_total{namespace=~"api-ns|auth-ns|image-ns"}[15m]) > 0.1
-            for: 5s
+            for: 0s
             labels:
               severity: warning
               component: kubernetes
@@ -32,13 +32,13 @@ data:
 
       # ===== API Service Alerts =====
       - name: api_service
-        interval: 5s
+        interval: 10s
         rules:
           - alert: APIHighErrorRate
             expr: |
               (sum(rate(http_requests_total{job="api-service",status_code=~"5.."}[5m])) by (instance) 
               / sum(rate(http_requests_total{job="api-service"}[5m])) by (instance)) > 0.05
-            for: 5s
+            for: 0s
             labels:
               severity: critical
               component: api-service
@@ -51,7 +51,7 @@ data:
               histogram_quantile(0.95, 
                 sum(rate(http_request_duration_seconds_bucket{job="api-service"}[5m])) by (le)
               ) > 1
-            for: 5s
+            for: 0s
             labels:
               severity: warning
               component: api-service
@@ -61,7 +61,7 @@ data:
 
           - alert: APILowThroughput
             expr: sum(rate(http_requests_total{job="api-service"}[5m])) < 0.1
-            for: 5m
+            for: 1m
             labels:
               severity: info
               component: api-service
@@ -71,13 +71,13 @@ data:
 
       # ===== Auth Service Alerts =====
       - name: auth_service
-        interval: 5s
+        interval: 10s
         rules:
           - alert: AuthServiceHighErrorRate
             expr: |
               (sum(rate(http_requests_total{job="auth-service",status=~"Internal Server Error|Bad Gateway|Service Unavailable|Gateway Timeout"}[5m])) by (instance)
               / sum(rate(http_requests_total{job="auth-service"}[5m])) by (instance)) > 0.05
-            for: 5s
+            for: 0s
             labels:
               severity: critical
               component: auth-service
@@ -90,7 +90,7 @@ data:
               histogram_quantile(0.95,
                 sum(rate(http_request_duration_seconds_bucket{job="auth-service"}[5m])) by (le)
               ) > 0.5
-            for: 5s
+            for: 0s
             labels:
               severity: warning
               component: auth-service
@@ -101,7 +101,7 @@ data:
           - alert: HighFailedLoginAttempts
             expr: |
               sum(rate(http_requests_total{job="auth-service",endpoint="/login",status="Unauthorized"}[5m])) by (instance) > 5
-            for: 5s
+            for: 0s
             labels:
               severity: warning
               component: auth-service
@@ -111,13 +111,13 @@ data:
 
       # ===== Image Service Alerts =====
       - name: image_service
-        interval: 5s
+        interval: 10s
         rules:
           - alert: ImageServiceHighErrorRate
             expr: |
               (sum(rate(http_requests_total{job="image-service",status=~"5.."}[5m])) by (instance)
               / sum(rate(http_requests_total{job="image-service"}[5m])) by (instance)) > 0.05
-            for: 5s
+            for: 0s
             labels:
               severity: critical
               component: image-service
@@ -130,7 +130,7 @@ data:
               histogram_quantile(0.95,
                 sum(rate(http_request_duration_seconds_bucket{job="image-service"}[5m])) by (le)
               ) > 3
-            for: 5s
+            for: 0s
             labels:
               severity: warning
               component: image-service
@@ -140,11 +140,11 @@ data:
 
       # ===== Database Alerts =====
       - name: database
-        interval: 5s
+        interval: 10s
         rules:
           - alert: PostgreSQLDown
             expr: up{job="postgres"} == 0
-            for: 5s
+            for: 0s
             labels:
               severity: critical
               component: database
@@ -156,7 +156,7 @@ data:
             expr: |
               pg_stat_database_numbackends{datname!~"template.*|postgres"} 
               / pg_settings_max_connections > 0.8
-            for: 5s
+            for: 0s
             labels:
               severity: warning
               component: database
@@ -166,12 +166,12 @@ data:
 
       # ===== Resource Utilization Alerts =====
       - name: resource_utilization
-        interval: 5s
+        interval: 10s
         rules:
           - alert: PodCrashLooping
             expr: |
               rate(kube_pod_container_status_restarts_total{namespace=~"api-ns|auth-ns|image-ns|data-ns"}[15m]) > 0
-            for: 5s
+            for: 0s
             labels:
               severity: critical
               component: kubernetes
@@ -181,12 +181,12 @@ data:
 
       # ===== Storage Alerts =====
       - name: storage
-        interval: 5s
+        interval: 10s
         rules:
           - alert: PersistentVolumeClaimPending
             expr: |
               kube_persistentvolumeclaim_status_phase{phase="Pending",namespace=~"data-ns|prometheus-ns"} == 1
-            for: 5s
+            for: 0s
             labels:
               severity: warning
               component: storage
@@ -196,13 +196,13 @@ data:
 
       # ===== Network Alerts =====
       - name: networking
-        interval: 5s
+        interval: 10s
         rules:
           - alert: IngressHighErrorRate
             expr: |
               sum(rate(nginx_ingress_controller_requests{status=~"5.."}[5m])) by (ingress)
               / sum(rate(nginx_ingress_controller_requests[5m])) by (ingress) > 0.05
-            for: 5s
+            for: 0s
             labels:
               severity: warning
               component: ingress
@@ -213,7 +213,7 @@ data:
           - alert: PodNotReady
             expr: |
               kube_pod_status_phase{namespace=~"api-ns|auth-ns|image-ns|data-ns",phase!~"Running|Succeeded"} == 1
-            for: 30s
+            for: 10s
             labels:
               severity: warning
               component: networking
@@ -223,12 +223,12 @@ data:
 
       # ===== HPA Alerts =====
       - name: autoscaling
-        interval: 5s
+        interval: 10s
         rules:
           - alert: HPAScalingDisabled
             expr: |
               kube_horizontalpodautoscaler_status_condition{condition="ScalingActive",status="false"} == 1
-            for: 30s
+            for: 10s
             labels:
               severity: warning
               component: autoscaling
@@ -240,7 +240,7 @@ data:
             expr: |
               kube_horizontalpodautoscaler_status_current_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}
               > kube_horizontalpodautoscaler_spec_min_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}
-            for: 1m
+            for: 30s
             labels:
               severity: info
               component: image-service
@@ -248,24 +248,13 @@ data:
               summary: "Image service scaled up"
               description: "Image service scaled to {{ $value }} replicas (above minimum)"
 
-          - alert: ImageServiceScalingDown
-            expr: |
-              delta(kube_horizontalpodautoscaler_status_current_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}[2m]) < 0
-            for: 30s
-            labels:
-              severity: info
-              component: image-service
-            annotations:
-              summary: "Image service is scaling down"
-              description: "Image service HPA scaling down event detected"
-
       # ===== Prometheus Self-Monitoring =====
       - name: prometheus_self
-        interval: 5s
+        interval: 10s
         rules:
           - alert: PrometheusConfigReloadFailed
             expr: prometheus_config_last_reload_successful == 0
-            for: 5s
+            for: 0s
             labels:
               severity: critical
               component: prometheus
@@ -275,7 +264,7 @@ data:
 
           - alert: PrometheusTargetDown
             expr: up == 0
-            for: 5s
+            for: 0s
             labels:
               severity: warning
               component: prometheus
