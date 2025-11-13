@@ -623,7 +623,7 @@ echo "127.0.0.1 thmanyah.local" | sudo tee -a /etc/hosts
 kubectl port-forward -n prometheus-ns svc/grafana 3000:3000
 # افتح: http://localhost:3000
 # Username: admin
-# Password: (تحقق من sealed-secret)
+# Password: admin (الباسورد الافتراضي)
 ```
 
 **Dashboards المتاحة:**
