@@ -108,8 +108,13 @@ data:
         # Slack notifications for critical alerts
         slack_configs:
           - channel: '#alerts-critical'
-            title: '🚨 Critical Alert'
-            text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+            title: '{{ if eq .Status "firing" }}🚨 Critical Alert{{ else }}✅ Resolved{{ end }}'
+            text: |
+              {{ range .Alerts }}
+              {{ if eq .Status "firing" }}🔴 *FIRING*{{ else }}✅ *RESOLVED*{{ end }}
+              {{ .Annotations.summary }}
+              {{ .Annotations.description }}
+              {{ end }}
             send_resolved: true
         
         # Email notifications (configure as needed)
@@ -135,8 +140,13 @@ data:
       - name: 'info-alerts'
         slack_configs:
           - channel: '#alerts-critical'
-            title: 'ℹ️ Info Alert'
-            text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+            title: '{{ if eq .Status "firing" }}ℹ️ Info Alert{{ else }}✅ Resolved{{ end }}'
+            text: |
+              {{ range .Alerts }}
+              {{ if eq .Status "firing" }}🔵 *INFO*{{ else }}✅ *RESOLVED*{{ end }}
+              {{ .Annotations.summary }}
+              {{ .Annotations.description }}
+              {{ end }}
             send_resolved: true
 
       # Database alerts receiver (console logs only)

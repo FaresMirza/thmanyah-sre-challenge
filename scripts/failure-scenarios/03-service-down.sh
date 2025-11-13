@@ -20,15 +20,15 @@ fi
 
 case "$SERVICE" in
   api)
-    DEPLOYMENT="api"
+    DEPLOYMENT="api-deployment"
     NAMESPACE="api-ns"
     ;;
   auth)
-    DEPLOYMENT="auth"
+    DEPLOYMENT="auth-deployment"
     NAMESPACE="auth-ns"
     ;;
   image)
-    DEPLOYMENT="image"
+    DEPLOYMENT="image-deployment"
     NAMESPACE="image-ns"
     ;;
   *)
