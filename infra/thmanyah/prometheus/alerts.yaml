@@ -242,11 +242,71 @@ data:
               > kube_horizontalpodautoscaler_spec_min_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}
             for: 30s
             labels:
-              severity: info
+              severity: critical
               component: image-service
             annotations:
               summary: "Image service experiencing high load - auto-scaled up"
               description: "Image service is under high load and has auto-scaled to {{ $value }} replicas (above minimum threshold)"
+
+          - alert: ImageServiceLoadNormalized
+            expr: |
+              kube_horizontalpodautoscaler_status_current_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}
+              == kube_horizontalpodautoscaler_spec_min_replicas{namespace="image-ns",horizontalpodautoscaler="image-hpa"}
+            for: 2m
+            labels:
+              severity: critical
+              component: image-service
+            annotations:
+              summary: "Image service load normalized - scaled back to minimum"
+              description: "Image service load has decreased and scaled back to {{ $value }} replicas (minimum threshold)"
+
+          - alert: APIServiceHighLoad
+            expr: |
+              kube_horizontalpodautoscaler_status_current_replicas{namespace="api-ns",horizontalpodautoscaler="api-hpa"}
+              > kube_horizontalpodautoscaler_spec_min_replicas{namespace="api-ns",horizontalpodautoscaler="api-hpa"}
+            for: 30s
+            labels:
+              severity: critical
+              component: api-service
+            annotations:
+              summary: "API service experiencing high load - auto-scaled up"
+              description: "API service is under high load and has auto-scaled to {{ $value }} replicas (above minimum threshold)"
+
+          - alert: APIServiceLoadNormalized
+            expr: |
+              kube_horizontalpodautoscaler_status_current_replicas{namespace="api-ns",horizontalpodautoscaler="api-hpa"}
+              == kube_horizontalpodautoscaler_spec_min_replicas{namespace="api-ns",horizontalpodautoscaler="api-hpa"}
+            for: 2m
+            labels:
+              severity: critical
+              component: api-service
+            annotations:
+              summary: "API service load normalized - scaled back to minimum"
+              description: "API service load has decreased and scaled back to {{ $value }} replicas (minimum threshold)"
+
+          - alert: AuthServiceHighLoad
+            expr: |
+              kube_horizontalpodautoscaler_status_current_replicas{namespace="auth-ns",horizontalpodautoscaler="auth-hpa"}
+              > kube_horizontalpodautoscaler_spec_min_replicas{namespace="auth-ns",horizontalpodautoscaler="auth-hpa"}
+            for: 30s
+            labels:
+              severity: critical
+              component: auth-service
+            annotations:
+              summary: "Auth service experiencing high load - auto-scaled up"
+              description: "Auth service is under high load and has auto-scaled to {{ $value }} replicas (above minimum threshold)"
+
+          - alert: AuthServiceLoadNormalized
+            expr: |
+              kube_horizontalpodautoscaler_status_current_replicas{namespace="auth-ns",horizontalpodautoscaler="auth-hpa"}
+              == kube_horizontalpodautoscaler_spec_min_replicas{namespace="auth-ns",horizontalpodautoscaler="auth-hpa"}
+            for: 2m
+            labels:
+              severity: critical
+              component: auth-service
+            annotations:
+              summary: "Auth service load normalized - scaled back to minimum"
+              description: "Auth service load has decreased and scaled back to {{ $value }} replicas (minimum threshold)"
 
       # ===== Prometheus Self-Monitoring =====
       - name: prometheus_self
