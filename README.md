@@ -189,27 +189,64 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
 **ما يحدث داخلياً:**
-- ينشئ Docker registry credentials للـ container images
-- ينشئ secrets للخدمات:
-  - PostgreSQL: `POSTGRES_PASSWORD`
-  - MinIO: `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`
-  - Auth Service: `JWT_SECRET`
-  - Grafana: `GF_SECURITY_ADMIN_PASSWORD`
-  - Alertmanager: `SLACK_WEBHOOK_URL`, `SLACK_CHANNEL`
-- يشفّر جميع الـ secrets باستخدام Sealed Secrets
-- يحفظ الـ Sealed Secrets في المجلدات المناسبة تحت `infra/thmanyah/`
 
-**الملفات المنتجة:**
+##### 1. تثبيت kubeseal (تلقائي)
+- **Windows**: ينفذ `Install-Kubeseal.ps1` تلقائياً
+  - يحمّل أحدث إصدار من GitHub (v0.33.1)
+  - يثبّت في `C:\bin\kubeseal`
+  - يضيف المسار إلى PATH
+  - يختبر التثبيت: `kubeseal --version`
+- **macOS/Linux**: يستخدم Homebrew أو التحميل المباشر
+- يتحقق من وجود `kubectl` و `sealed-secrets-controller`
+
+##### 2. إنشاء الأسرار
+ينشئ secrets شاملة للخدمات:
+- **PostgreSQL**: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
+- **MinIO**: `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`
+- **Auth Service**: `JWT_SECRET` (مولد تلقائياً), `DATABASE_URL`
+- **API Service**: `JWT_SECRET`, `AUTH_SERVICE_URL`, `IMAGE_SERVICE_URL`
+- **Image Service**: `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_BUCKET`
+- **Grafana**: `GF_SECURITY_ADMIN_USER`, `GF_SECURITY_ADMIN_PASSWORD`
+- **Alertmanager**: `SLACK_WEBHOOK_URL` (تفاعلي)
+- **Docker Registry**: Credentials لسحب container images من GitHub Container Registry
+
+##### 3. تشفير TLS Certificates
+- يستخدم شهادات TLS موجودة في مجلد `scripts/tls/`
+- **المطلوب**: `tls.crt` و `tls.key` في `scripts/tls/`
+- ينشئ Sealed Secrets للشهادات في namespaces: `api-ns` و `grafana-ns`
+- **متوافق مع جميع المنصات**: Windows, macOS, Linux
+
+##### 4. تشفير Sealed Secrets
+- يشفّر جميع الـ secrets باستخدام Sealed Secrets Controller
+- **آمن للـ Git**: الملفات المشفرة يمكن commit آمن
+- **فك التشفير**: فقط الكلاستر المحدد يمكنه فك التشفير
+
+**الملفات المنتجة (12 ملف):**
 ```
 infra/thmanyah/
-├── api/regcred-sealed.yaml & sealed-secret.yaml
-├── auth/regcred-sealed.yaml & sealed-secret.yaml
-├── image/regcred-sealed.yaml & sealed-secret.yaml
-├── db/sealed-secret.yaml
-├── minio/sealed-secret.yaml
-├── grafana/sealed-secret.yaml
-└── prometheus/alertmanager-sealed-secret.yaml
+├── api/
+│   ├── sealed-secret.yaml       # API service secrets
+│   ├── regcred-sealed.yaml      # Docker registry credentials
+│   └── tls-secret-sealed.yaml   # TLS certificate
+├── auth/
+│   ├── sealed-secret.yaml       # Auth service secrets
+│   └── regcred-sealed.yaml      # Docker registry credentials  
+├── image/
+│   ├── sealed-secret.yaml       # Image service secrets
+│   └── regcred-sealed.yaml      # Docker registry credentials
+├── db/sealed-secret.yaml        # PostgreSQL credentials
+├── minio/sealed-secret.yaml     # MinIO credentials
+├── grafana/
+│   ├── sealed-secret.yaml       # Grafana admin credentials
+│   └── tls-secret-sealed.yaml   # TLS certificate
+└── prometheus/
+    └── alertmanager-sealed-secret.yaml  # Slack webhook
 ```
+
+##### 5. إعداد /etc/hosts (تلقائي)
+- **Windows**: يضيف `127.0.0.1 thmanyah.local` إلى `C:\Windows\System32\drivers\etc\hosts`
+- **macOS/Linux**: يضيف إلى `/etc/hosts` (يتطلب sudo)
+- يمكّن الوصول للتطبيق عبر: `https://thmanyah.local`
 
 #### الخطوة 4: نشر التطبيقات عبر ArgoCD
 
