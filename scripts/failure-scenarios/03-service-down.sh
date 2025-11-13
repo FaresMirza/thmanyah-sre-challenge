@@ -47,5 +47,4 @@ echo "✅ $SERVICE service is now DOWN"
 echo ""
 echo "To recover, run:"
 echo "  kubectl scale deployment $DEPLOYMENT --replicas=2 -n $NAMESPACE"
-echo ""
-echo "Or let HPA auto-scale it back based on load"
+

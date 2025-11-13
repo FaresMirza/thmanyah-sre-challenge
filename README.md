@@ -118,31 +118,130 @@ infra/thmanyah/
 ```
 
 **ما يحدث داخلياً:**
-- يطبّق ArgoCD ApplicationSet من `infra/thmanyah-applicationset.yaml`
-- ArgoCD يكتشف تلقائياً جميع المجلدات تحت `infra/thmanyah/` وينشئ Application لكل مجلد
-- يتم نشر:
-  - **Data Layer**: PostgreSQL StatefulSet, MinIO
-  - **Application Services**: API, Auth, Image
-  - **Monitoring Stack**: Prometheus, Alertmanager, Grafana
-  - **Ingress Controller**: Nginx Ingress
-  - **Security**: Network Policies, RBAC, PDB
-- يفعّل Auto-Sync و Self-Heal
-- يتجاهل تغييرات `replicas` للـ Deployments و StatefulSets (للسماح بـ HPA)
+
+##### 1. تطبيق ApplicationSet
+السكربت يطبّق `infra/thmanyah-applicationset.yaml` على الكلاستر:
+```bash
+kubectl apply -f ../infra/thmanyah-applicationset.yaml
+```
+
+##### 2. كيف يعمل ApplicationSet
+```yaml
+# المولّد (Generator): يبحث في Git Repository
+generators:
+  - git:
+      repoURL: https://github.com/FaresMirza/thmanyah-sre-challenge.git
+      revision: main
+      directories:
+        - path: infra/thmanyah/*  # يكتشف كل مجلد تلقائياً
+
+# القالب (Template): ينشئ Application لكل مجلد
+template:
+  metadata:
+    name: '{{path.basename}}-app'  # مثلاً: api-app, db-app, prometheus-app
+  spec:
+    destination:
+      namespace: '{{path.basename}}-ns'  # مثلاً: api-ns, db-ns
+    source:
+      path: '{{path}}'  # المسار الكامل للمجلد
+```
+
+##### 3. النتيجة
+ArgoCD ينشئ **Application منفصل** لكل مجلد:
+- `api-app` → ينشر محتويات `infra/thmanyah/api/` إلى `api-ns`
+- `auth-app` → ينشر محتويات `infra/thmanyah/auth/` إلى `auth-ns`
+- `image-app` → ينشر محتويات `infra/thmanyah/image/` إلى `image-ns`
+- `db-app` → ينشر محتويات `infra/thmanyah/db/` إلى `data-ns`
+- `prometheus-app` → ينشر محتويات `infra/thmanyah/prometheus/` إلى `prometheus-ns`
+- `grafana-app` → ينشر محتويات `infra/thmanyah/grafana/` إلى `grafana-ns`
+- `minio-app` → ينشر محتويات `infra/thmanyah/minio/` إلى `minio-ns`
+- `ingress-app` → ينشر محتويات `infra/thmanyah/ingress/` إلى `ingress-ns`
+
+##### 4. الإعدادات الذكية
+
+**Auto-Sync و Self-Heal:**
+```yaml
+syncPolicy:
+  automated:
+    prune: true      # يحذف الموارد الزائدة
+    selfHeal: true   # يصلح التغييرات اليدوية تلقائياً
+```
+
+**تجاهل replicas (للسماح بـ HPA):**
+```yaml
+ignoreDifferences:
+  - kind: Deployment
+    jsonPointers:
+      - /spec/replicas  # يتجاهل تغييرات عدد النسخ
+  - kind: StatefulSet
+    jsonPointers:
+      - /spec/replicas
+```
+
+**لماذا نتجاهل replicas؟**
+- ✅ HPA يحتاج تغيير `replicas` ديناميكياً
+- ✅ سيناريوهات الفشل تحتاج scale يدوي
+- ✅ بدون ignore، ArgoCD سيرجع `replicas` للقيمة في Git
+
+##### 5. ما يتم نشره
+
+**Data Layer:**
+- PostgreSQL StatefulSet (قاعدة البيانات)
+- MinIO Deployment (Object Storage)
+- PVCs للتخزين الدائم
+
+**Application Services:**
+- API Service (Node.js)
+- Auth Service (Go)
+- Image Service (Python)
+
+**Monitoring Stack:**
+- Prometheus (المراقبة)
+- Alertmanager (الإشعارات)
+- Grafana (الـ Dashboards)
+
+**Infrastructure:**
+- Nginx Ingress Controller
+- Network Policies (عزل الشبكة)
+- RBAC (الصلاحيات)
+- PDB (الحماية من الانقطاع)
+- HPA (التوسع التلقائي)
 
 **التحقق من النشر:**
 ```bash
-# التحقق من ArgoCD Applications
+# 1. التحقق من Applications في ArgoCD
 kubectl get applications -n argocd
+# يجب أن ترى 8-10 applications
 
-# التحقق من الـ Pods
+# 2. التحقق من حالة كل Application
+kubectl get applications -n argocd -o wide
+# Health: Healthy, Sync: Synced
+
+# 3. عرض تفاصيل Application معين
+kubectl get application api-app -n argocd -o yaml
+
+# 4. التحقق من الـ Pods
 kubectl get pods -A
+# يجب أن ترى pods في جميع الـ namespaces
 
-# التحقق من الـ Services
+# 5. التحقق من الـ Services
 kubectl get svc -A
 
-# التحقق من الـ Ingress
+# 6. التحقق من الـ Ingress
 kubectl get ingress -A
+
+# 7. مشاهدة ArgoCD UI
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+# افتح: https://localhost:8080
+# ستشاهد جميع الـ Applications مع حالتها
 ```
+
+**ماذا يحدث إذا غيّرت ملف في Git؟**
+1. تعمل commit و push للتغيير
+2. ArgoCD يكتشف التغيير خلال 3 دقائق (أو فوري مع webhook)
+3. يقارن الحالة الحالية مع Git
+4. يطبّق التغييرات تلقائياً (Auto-Sync)
+5. تشوف التحديث في الـ UI
 
 ### البنية التحتية كـ Code (GitOps)
 
@@ -625,4 +724,4 @@ targetCPUUtilizationPercentage: 60  # تقليل العتبة
 - [Kind Documentation](https://kind.sigs.k8s.io/)
 
 
-**صنع بـ حب من أجل Thamanyh**
+**Made By Eng.Fares Mirza**
