@@ -150,7 +150,7 @@ data:
               component: database
             annotations:
               summary: "PostgreSQL database is down"
-              description: "PostgreSQL has been unreachable for more than 2 minutes."
+              description: "PostgreSQL is currently unreachable and not responding to health checks."
 
           - alert: HighDatabaseConnections
             expr: |
