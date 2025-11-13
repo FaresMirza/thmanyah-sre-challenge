@@ -39,7 +39,6 @@ data:
           receiver: 'critical-alerts'
           group_wait: 1s
           repeat_interval: 5m
-          continue: true
 
         # Warning alerts - standard notification
         - match:
@@ -60,25 +59,21 @@ data:
             component: database
           receiver: 'database-alerts'
           repeat_interval: 5m
-          continue: true
 
         # API service alerts
         - match:
             component: api-service
           receiver: 'api-alerts'
-          continue: true
 
         # Auth service alerts
         - match:
             component: auth-service
           receiver: 'auth-alerts'
-          continue: true
 
         # Image service alerts
         - match:
             component: image-service
           receiver: 'image-alerts'
-          continue: true
 
     # Inhibition rules - prevent certain alerts when others are firing
     inhibit_rules:
