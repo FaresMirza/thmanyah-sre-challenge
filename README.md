@@ -4,6 +4,8 @@
 
 هذا المشروع يوضح بناء ونشر بيئة Kubernetes كاملة باستخدام GitOps (ArgoCD) مع نظام مراقبة شامل (Prometheus + Grafana + Alertmanager) وإدارة الأسرار (Sealed Secrets) واختبار سيناريوهات الفشل.
 
+![Architecture Diagram](architecture.gif)
+
 ### المكونات الأساسية
 
 - **Kubernetes Cluster**: Kind (Kubernetes in Docker)
