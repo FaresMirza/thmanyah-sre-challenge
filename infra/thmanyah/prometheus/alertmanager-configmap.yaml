@@ -127,50 +127,30 @@ data:
         #   - service_key: 'YOUR_PAGERDUTY_SERVICE_KEY'
         #     description: '{{ .GroupLabels.alertname }}: {{ .CommonAnnotations.summary }}'
 
-      # Warning alerts receiver
+      # Warning alerts receiver (console logs only)
       - name: 'warning-alerts'
-        slack_configs:
-          - channel: '#alerts-warning'
-            title: '⚠️ Warning Alert'
-            text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
-            send_resolved: true
+        # Slack notifications disabled - only critical alerts go to Slack
 
       # Info alerts receiver
       - name: 'info-alerts'
         slack_configs:
-          - channel: '#alerts-info'
+          - channel: '#alerts-critical'
             title: 'ℹ️ Info Alert'
             text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
             send_resolved: true
 
-      # Database alerts receiver
+      # Database alerts receiver (console logs only)
       - name: 'database-alerts'
-        slack_configs:
-          - channel: '#database-alerts'
-            title: '💾 Database Alert'
-            text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
-            send_resolved: true
+        # Slack notifications disabled - only critical alerts go to Slack
 
-      # API service alerts receiver
+      # API service alerts receiver (console logs only)
       - name: 'api-alerts'
-        slack_configs:
-          - channel: '#api-alerts'
-            title: '🌐 API Service Alert'
-            text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
-            send_resolved: true
+        # Slack notifications disabled - only critical alerts go to Slack
 
-      # Auth service alerts receiver
+      # Auth service alerts receiver (console logs only)
       - name: 'auth-alerts'
-        slack_configs:
-          - channel: '#auth-alerts'
-            title: '🔐 Auth Service Alert'
-            text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
-            send_resolved: true
+        # Slack notifications disabled - only critical alerts go to Slack
 
-      # Image service alerts receiver
+      # Image service alerts receiver (console logs only)
       - name: 'image-alerts'
-        slack_configs:
-          - channel: '#image-alerts'
-            title: '🖼️ Image Service Alert'
-            text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
-            send_resolved: true
+        # Slack notifications disabled - only critical alerts go to Slack

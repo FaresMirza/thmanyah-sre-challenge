@@ -245,8 +245,8 @@ data:
               severity: info
               component: image-service
             annotations:
-              summary: "Image service scaled up"
-              description: "Image service scaled to {{ $value }} replicas (above minimum)"
+              summary: "Image service experiencing high load - auto-scaled up"
+              description: "Image service is under high load and has auto-scaled to {{ $value }} replicas (above minimum threshold)"
 
       # ===== Prometheus Self-Monitoring =====
       - name: prometheus_self
