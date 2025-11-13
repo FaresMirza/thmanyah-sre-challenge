@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Initialize kubeseal command variable
+KUBESEAL_CMD="kubeseal"
+
 echo "🔐 Creating Sealed Secrets"
 echo "=========================="
 echo ""
@@ -14,13 +17,51 @@ fi
 # Check if kubeseal is installed
 if ! command -v kubeseal &> /dev/null; then
     echo "❌ kubeseal not found. Installing..."
-    if [[ "$OSTYPE" == "darwin"* ]]; then
+    if [[ "${OSTYPE}" == "darwin"* ]]; then
         if command -v brew &> /dev/null; then
             brew install kubeseal
         else
             echo "❌ Please install Homebrew or download kubeseal manually from:"
             echo "   https://github.com/bitnami-labs/sealed-secrets/releases"
             exit 1
+        fi
+    elif [[ "${OSTYPE}" == "msys" ]] || [[ "${OSTYPE}" == "win32" ]] || [[ "${OSTYPE}" == "cygwin" ]]; then
+        echo "Detected Windows environment. Attempting to run Install-Kubeseal.ps1..."
+        # Use pwd to get current directory in Windows format
+        CURRENT_DIR=$(pwd -W 2>/dev/null || pwd)
+        PS1_PATH="$CURRENT_DIR\\Install-Kubeseal.ps1"
+
+        if command -v powershell.exe &> /dev/null; then
+            echo "Setting PowerShell execution policy to RemoteSigned for CurrentUser..."
+            powershell.exe -NoProfile -Command "Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force" || true
+
+            echo "Running installer script: $PS1_PATH"
+            powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$PS1_PATH"
+        else
+            echo "❌ powershell.exe not found. Please run Install-Kubeseal.ps1 manually:"
+            echo "   Set-ExecutionPolicy RemoteSigned -Scope CurrentUser"
+            echo "   & \"$PS1_PATH\""
+            exit 1
+        fi
+
+        # Re-check kubeseal after installer
+        if ! command -v kubeseal &> /dev/null; then
+            echo "⚠️ kubeseal not found in PATH, but checking if it was installed..."
+            
+            # Try to use kubeseal from the installation directory
+            if [[ -f "/c/bin/kubeseal/kubeseal.exe" ]]; then
+                echo "✅ Found kubeseal at C:\bin\kubeseal\kubeseal.exe - will use full path"
+                # Set a variable to use the full path
+                KUBESEAL_CMD="/c/bin/kubeseal/kubeseal.exe"
+                echo "✅ kubeseal is now available for this session"
+            else
+                echo "❌ kubeseal installation failed. Please open a NEW PowerShell window or install manually:"
+                echo "   Set-ExecutionPolicy RemoteSigned -Scope CurrentUser"
+                echo "   & \"$PS1_PATH\""
+                exit 1
+            fi
+        else
+            KUBESEAL_CMD="kubeseal"
         fi
     else
         echo "❌ Please install kubeseal manually from:"
@@ -68,7 +109,7 @@ create_sealed_secret() {
     done
     
     # Create and seal the secret
-    eval $cmd | kubeseal -o yaml > $output_file
+    eval $cmd | $KUBESEAL_CMD -o yaml > $output_file
     echo "✅ Created: $output_file"
 }
 
@@ -206,7 +247,7 @@ for namespace in api-ns auth-ns image-ns; do
         --docker-username=$GITHUB_USERNAME \
         --docker-password=$GITHUB_PAT \
         --docker-email=$GITHUB_EMAIL \
-        --dry-run=client -o yaml | kubeseal -o yaml > "$REPO_ROOT/infra/thmanyah/${namespace%-ns}/regcred-sealed.yaml"
+        --dry-run=client -o yaml | $KUBESEAL_CMD -o yaml > "$REPO_ROOT/infra/thmanyah/${namespace%-ns}/regcred-sealed.yaml"
     
     echo "✅ Created: $REPO_ROOT/infra/thmanyah/${namespace%-ns}/regcred-sealed.yaml"
 done
@@ -218,27 +259,26 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "🔒 TLS Certificate (for api-ns and grafana-ns)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# Use temporary files for certificate generation
-TLS_CERT_FILE="/tmp/thmanyah-tls.crt"
-TLS_KEY_FILE="/tmp/thmanyah-tls.key"
+# Use existing TLS certificates from tls folder
+TLS_CERT_FILE="$SCRIPT_DIR/tls/tls.crt"
+TLS_KEY_FILE="$SCRIPT_DIR/tls/tls.key"
 
-echo "Generating self-signed TLS certificate..."
+# Check if TLS files exist
+if [[ ! -f "$TLS_CERT_FILE" ]] || [[ ! -f "$TLS_KEY_FILE" ]]; then
+    echo "❌ TLS certificate files not found in $SCRIPT_DIR/tls/"
+    echo "   Expected files: tls.crt and tls.key"
+    echo "   Please place your TLS certificate and key files in the tls/ folder"
+    exit 1
+fi
 
-# Generate self-signed certificate
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout "$TLS_KEY_FILE" \
-    -out "$TLS_CERT_FILE" \
-    -subj "/CN=thmanyah.local/O=Thmanyah" \
-    &> /dev/null
-
-echo "✅ Generated temporary self-signed certificate"
+echo "✅ Using existing TLS certificates from tls/ folder"
 
 # Create sealed secret for api-ns
 kubectl create secret tls thmanyah-tls \
     --namespace=api-ns \
     --cert="$TLS_CERT_FILE" \
     --key="$TLS_KEY_FILE" \
-    --dry-run=client -o yaml | kubeseal -o yaml > "$REPO_ROOT/infra/thmanyah/api/tls-secret-sealed.yaml"
+    --dry-run=client -o yaml | $KUBESEAL_CMD -o yaml > "$REPO_ROOT/infra/thmanyah/api/tls-secret-sealed.yaml"
 
 echo "✅ Created: $REPO_ROOT/infra/thmanyah/api/tls-secret-sealed.yaml"
 
@@ -247,12 +287,9 @@ kubectl create secret tls thmanyah-tls \
     --namespace=grafana-ns \
     --cert="$TLS_CERT_FILE" \
     --key="$TLS_KEY_FILE" \
-    --dry-run=client -o yaml | kubeseal -o yaml > "$REPO_ROOT/infra/thmanyah/grafana/tls-secret-sealed.yaml"
+    --dry-run=client -o yaml | $KUBESEAL_CMD -o yaml > "$REPO_ROOT/infra/thmanyah/grafana/tls-secret-sealed.yaml"
 
 echo "✅ Created: $REPO_ROOT/infra/thmanyah/grafana/tls-secret-sealed.yaml"
-
-# Clean up temporary certificate files
-rm -f "$TLS_CERT_FILE" "$TLS_KEY_FILE"
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
