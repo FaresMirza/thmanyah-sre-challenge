@@ -20,6 +20,104 @@
 - **Security**: Sealed Secrets, Network Policies, RBAC
 - **High Availability**: HPA, PDB, Resource Limits
 
+### Container Images و Dockerfiles
+
+جميع التطبيقات معرفة في Dockerfiles جاهزة للبناء والنشر:
+
+#### 📁 مواقع الـ Dockerfiles
+
+```
+apps/
+├── api-service/
+│   ├── Dockerfile              # Node.js 18 Alpine
+│   ├── package.json
+│   └── src/
+│       ├── server.js
+│       └── routes/
+│
+├── auth-service/
+│   ├── Dockerfile              # Golang 1.21 Multi-stage
+│   └── main.go
+│
+└── image-service/
+    ├── Dockerfile              # Python 3.11 Slim
+    ├── requirements.txt
+    └── main.py
+```
+
+#### 🐳 تفاصيل كل Dockerfile
+
+**1. API Service (Node.js)**
+- **Base Image**: `node:18-alpine`
+- **Port**: 3000
+- **Features**:
+  - Multi-stage build للتقليل من حجم الـ image
+  - Non-root user للأمان
+  - Health check endpoint: `/health`
+- **الاستخدام**:
+  ```bash
+  cd apps/api-service
+  docker build -t api-service:latest .
+  docker run -p 3000:3000 api-service:latest
+  ```
+
+**2. Auth Service (Go)**
+- **Base Image**: `golang:1.21-alpine` (build), `alpine:latest` (runtime)
+- **Port**: 8080
+- **Features**:
+  - Multi-stage build (binary صغير جداً ~10MB)
+  - JWT authentication
+  - Statically compiled binary
+- **الاستخدام**:
+  ```bash
+  cd apps/auth-service
+  docker build -t auth-service:latest .
+  docker run -p 8080:8080 auth-service:latest
+  ```
+
+**3. Image Service (Python)**
+- **Base Image**: `python:3.11-slim`
+- **Port**: 5000
+- **Features**:
+  - Image processing capabilities (Pillow)
+  - MinIO client for object storage
+  - Virtual environment للعزل
+- **الاستخدام**:
+  ```bash
+  cd apps/image-service
+  docker build -t image-service:latest .
+  docker run -p 5000:5000 image-service:latest
+  ```
+
+#### 📦 Container Registry
+
+الـ images المستخدمة في الـ deployment:
+- API Service: `faresalrz/api-service:latest`
+- Auth Service: `faresalrz/auth-service:latest`
+- Image Service: `faresalrz/image-service:latest`
+
+> **ملاحظة**: الـ images منشورة على Docker Hub. يمكنك استخدامها مباشرة أو بناء نسختك الخاصة من الـ Dockerfiles.
+
+#### 🔄 بناء ونشر الـ Images
+
+```bash
+# بناء جميع الـ images
+cd apps/api-service && docker build -t your-registry/api-service:latest .
+cd apps/auth-service && docker build -t your-registry/auth-service:latest .
+cd apps/image-service && docker build -t your-registry/image-service:latest .
+
+# Push إلى Registry
+docker push your-registry/api-service:latest
+docker push your-registry/auth-service:latest
+docker push your-registry/image-service:latest
+
+# تحديث الـ deployment manifests
+# عدّل image names في:
+# - infra/thmanyah/api/deployment.yaml
+# - infra/thmanyah/auth/deployment.yaml
+# - infra/thmanyah/image/deployment.yaml
+```
+
 ---
 
 ## 1️⃣ كيف بنيت ونشرت البيئة بالتفصيل
