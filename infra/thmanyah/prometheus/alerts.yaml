@@ -59,15 +59,7 @@ data:
               summary: "API service has high latency"
               description: "API service p95 latency is {{ $value }}s (threshold: 1s)"
 
-          - alert: APILowThroughput
-            expr: sum(rate(http_requests_total{job="api-service"}[5m])) < 0.1
-            for: 1m
-            labels:
-              severity: info
-              component: api-service
-            annotations:
-              summary: "API service has low throughput"
-              description: "API service is receiving {{ $value }} requests/second"
+
 
       # ===== Auth Service Alerts =====
       - name: auth_service
@@ -295,3 +287,4 @@ data:
             annotations:
               summary: "Prometheus target {{ $labels.job }} is down"
               description: "Prometheus cannot scrape {{ $labels.job }} on {{ $labels.instance }}"
+
