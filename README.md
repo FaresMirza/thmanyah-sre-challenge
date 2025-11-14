@@ -133,6 +133,20 @@ docker push your-registry/image-service:latest
 - Git
 ```
 
+> **⚠️ ملاحظة مهمة للمستخدمين على Windows:**
+> 
+> جميع السكربتات يجب تشغيلها في **Git Bash أو WSL** بصلاحيات المسؤول (Administrator).
+> 
+> **خطوات التشغيل:**
+> 1. افتح Git Bash كمسؤول (Run as Administrator)
+> 2. انتقل لمجلد المشروع: `cd /c/Users/Administrator/Desktop/thmanyah-sre-challenge`
+> 3. شغل السكربتات: `cd scripts && ./01-provision-cluster.sh`
+> 
+> **لماذا نحتاج صلاحيات المسؤول؟**
+> - تعديل ملف hosts (`C:\Windows\System32\drivers\etc\hosts`)
+> - تثبيت kubeseal في مجلد النظام
+> - إعداد Docker والكلاستر بشكل صحيح
+
 ### خطوات البناء والنشر
 
 #### الخطوة 1: إنشاء الكلاستر
