@@ -41,17 +41,30 @@ spec:
               containerPort: 80
             - name: https
               containerPort: 443
-          livenessProbe:
-            httpGet:
-              path: /healthz
-              port: 10254
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            timeoutSeconds: 5
           readinessProbe:
             httpGet:
               path: /healthz
               port: 10254
+              scheme: HTTP
             initialDelaySeconds: 10
             periodSeconds: 10
             timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 10254
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"

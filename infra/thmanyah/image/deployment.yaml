@@ -39,14 +39,22 @@ spec:
             httpGet:
               path: /healthz
               port: 5000
-            initialDelaySeconds: 30
+              scheme: HTTP
+            initialDelaySeconds: 10
             periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /livez
               port: 5000
-            initialDelaySeconds: 60
-            periodSeconds: 15
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
       imagePullSecrets:
         - name: ghcr-regcred
       restartPolicy: Always

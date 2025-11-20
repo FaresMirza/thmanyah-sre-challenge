@@ -51,6 +51,9 @@ spec:
                 - thmanyah
             initialDelaySeconds: 10
             periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
           livenessProbe:
             exec:
               command:
@@ -59,8 +62,11 @@ spec:
                 - admin
                 - -d
                 - thmanyah
-            initialDelaySeconds: 15
-            periodSeconds: 20
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
         
         # Postgres Exporter Sidecar
         - name: postgres-exporter

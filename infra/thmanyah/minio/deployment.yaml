@@ -37,14 +37,22 @@ spec:
             httpGet:
               path: /minio/health/ready
               port: 9000
-            initialDelaySeconds: 5
+              scheme: HTTP
+            initialDelaySeconds: 10
             periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /minio/health/live
               port: 9000
-            initialDelaySeconds: 10
-            periodSeconds: 15
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
       volumes:
         - name: data
           persistentVolumeClaim:
