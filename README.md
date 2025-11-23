@@ -92,9 +92,9 @@ apps/
 #### 📦 Container Registry
 
 الـ images المستخدمة في الـ deployment:
-- API Service: `faresalrz/api-service:latest`
-- Auth Service: `faresalrz/auth-service:latest`
-- Image Service: `faresalrz/image-service:latest`
+- API Service: `faresmirza/api-service:latest`
+- Auth Service: `faresmirza/auth-service:latest`
+- Image Service: `faresmirza/image-service:latest`
 
 > **ملاحظة**: الـ images منشورة على Docker Hub. يمكنك استخدامها مباشرة أو بناء نسختك الخاصة من الـ Dockerfiles.
 
