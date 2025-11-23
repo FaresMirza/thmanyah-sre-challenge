@@ -719,7 +719,6 @@ kubectl port-forward -n prometheus-ns svc/alertmanager 9093:9093
 | **Alertmanager** | Port-forward 9093 | - |
 
 **API Endpoints المتاحة:**
-- `GET  /api/ping` - Health check
 - `GET  /healthz` - Kubernetes readiness
 - `GET  /livez` - Kubernetes liveness
 - `GET  /metrics` - Prometheus metrics
